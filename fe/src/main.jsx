@@ -1,7 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import './index.css'
-import App from './App.jsx'
+import { RootRoutes } from './routes/RootRoutes.jsx'
 import { registerSW } from 'virtual:pwa-register';
 
 // Register service worker
@@ -47,6 +48,8 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <RootRoutes />
+    </BrowserRouter>
   </StrictMode>,
 )

@@ -12,6 +12,7 @@ import { NotificationSettings } from './components/NotificationSettings';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { registerSW } from 'virtual:pwa-register';
 import { initDB } from './services/dbService';
+import { useAuth } from './hooks/useAuth';
 import {
   CalendarDays,
   Clock,
@@ -30,6 +31,8 @@ import {
 const WEATHER_SYNC_TAG = 'weather-sync-refresh';
 
 function App() {
+  const { user, logout } = useAuth();
+
   const {
     weather,
     forecast,
@@ -332,9 +335,23 @@ function App() {
                 <h3 className="text-base font-semibold text-slate-100">
                   Trạng thái hệ thống
                 </h3>
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-wide text-slate-300">
-                  Live
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-wide text-slate-300">
+                    Live
+                  </span>
+                  {user && (
+                    <div className="inline-flex items-center gap-2 rounded-full bg-slate-900/60 px-3 py-1 text-xs text-slate-200">
+                      <span className="font-medium">Hi, {user.username}</span>
+                      <button
+                        type="button"
+                        onClick={logout}
+                        className="rounded-full border border-white/20 px-2 py-0.5 text-[11px] text-slate-300 hover:border-white/40 hover:text-white"
+                      >
+                        Đăng xuất
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {statusItems.map((item) => {

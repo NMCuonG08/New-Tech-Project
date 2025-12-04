@@ -1,9 +1,20 @@
 import express from "express";
+import cors from "cors";
 import { AppDataSource } from "./data-source";
 import { ENV } from "./config/env";
 import authRoutes from "./routes/authRoutes";
 
 const app = express();
+
+// CORS configuration - cho phép FE connect
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Vite default port
+    credentials: true, // Cho phép gửi cookies/auth headers
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json());
 
@@ -11,7 +22,7 @@ app.get("/", (_req, res) => {
   res.send("Hello from Express + TypeScript + TypeORM!");
 });
 
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 
 AppDataSource.initialize()
   .then(() => {

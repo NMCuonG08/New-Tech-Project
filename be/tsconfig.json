@@ -17,6 +17,11 @@
     // "types": ["node"],
     // and npm install -D @types/node
 
+    // Decorators (cho TypeORM entity, controller, v.v.)
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false,
+
     // Other Outputs
     "sourceMap": true,
     "declaration": true,
