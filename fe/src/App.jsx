@@ -10,6 +10,7 @@ import { ForecastCard } from './components/ForecastCard';
 import { OfflineBanner } from './components/OfflineBanner';
 import { NotificationSettings } from './components/NotificationSettings';
 import { UpdatePrompt } from './components/UpdatePrompt';
+import { ChatOverlay } from './components/ChatOverlay';
 import { registerSW } from 'virtual:pwa-register';
 import { initDB } from './services/dbService';
 import { useAuth } from './hooks/useAuth';
@@ -425,6 +426,9 @@ function App() {
           </p>
         </footer>
       </main>
+
+      {/* Chat Overlay */}
+      <ChatOverlay />
     </div>
   );
 }

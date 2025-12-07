@@ -42,8 +42,8 @@ function RootLayout() {
                                 <Link
                                     to="/login"
                                     className={`rounded-full border px-3 py-1 transition ${isLogin
-                                            ? 'border-blue-400 bg-blue-500/20 text-blue-100'
-                                            : 'border-white/20 text-slate-200 hover:border-white/40'
+                                        ? 'border-blue-400 bg-blue-500/20 text-blue-100'
+                                        : 'border-white/20 text-slate-200 hover:border-white/40'
                                         }`}
                                 >
                                     Đăng nhập
@@ -51,8 +51,8 @@ function RootLayout() {
                                 <Link
                                     to="/register"
                                     className={`rounded-full border px-3 py-1 transition ${isRegister
-                                            ? 'border-emerald-400 bg-emerald-500/20 text-emerald-100'
-                                            : 'border-white/20 text-slate-200 hover:border-white/40'
+                                        ? 'border-emerald-400 bg-emerald-500/20 text-emerald-100'
+                                        : 'border-white/20 text-slate-200 hover:border-white/40'
                                         }`}
                                 >
                                     Đăng ký
@@ -87,14 +87,7 @@ export function RootRoutes() {
             <Route element={<RootLayout />}>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
-                <Route
-                    path="/"
-                    element={
-                        <ProtectedRoute>
-                            <App />
-                        </ProtectedRoute>
-                    }
-                />
+                <Route path="/" element={<App />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
         </Routes>
