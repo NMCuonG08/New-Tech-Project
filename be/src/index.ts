@@ -1,8 +1,10 @@
+import "reflect-metadata";
 import express from "express";
 import cors from "cors";
 import { AppDataSource } from "./data-source";
 import { ENV } from "./config/env";
 import authRoutes from "./routes/authRoutes";
+import aiRoutes from "./routes/ai.route";
 
 const app = express();
 
@@ -23,7 +25,7 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
-
+app.use("/api/ai", aiRoutes);
 AppDataSource.initialize()
   .then(() => {
     console.log("Data Source has been initialized");
