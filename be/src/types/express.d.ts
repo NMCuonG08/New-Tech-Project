@@ -1,0 +1,1 @@
+Extended the Express `Request` interface to include the `user` property.
