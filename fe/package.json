@@ -10,14 +10,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@tailwindcss/postcss": "^4.1.17",
     "axios": "^1.7.9",
     "cors": "^2.8.5",
+    "framer-motion": "^12.23.25",
     "lucide-react": "^0.464.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hook-form": "^7.68.0",
+    "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.30.2",
-    "vite-plugin-pwa": "^1.1.0"
+    "vite-plugin-pwa": "^1.1.0",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
