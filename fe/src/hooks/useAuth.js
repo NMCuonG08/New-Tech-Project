@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { clearAuthUser, loadAuthUser, loginRequest, registerRequest, saveAuthUser } from '../services/authService';
 
 export function useAuth() {
@@ -20,7 +21,16 @@ export function useAuth() {
         try {
             const data = await loginRequest({ username, password });
             saveAuthUser(data);
-            setUser(data);
+            
+            // Extract user từ response (tương thích cả backend mới và cũ)
+            const userData = data.user || data;
+            setUser(userData);
+            
+            // Toast notification
+            toast.success(`Chào mừng ${userData.username}! 👋`, {
+                duration: 3000,
+            });
+            
             return data;
         } catch (err) {
             const message =
@@ -28,6 +38,12 @@ export function useAuth() {
                 err?.message ||
                 'Đăng nhập thất bại, vui lòng thử lại';
             setError(message);
+            
+            // Toast error
+            toast.error(message, {
+                duration: 4000,
+            });
+            
             throw err;
         } finally {
             setLoading(false);
@@ -39,6 +55,12 @@ export function useAuth() {
         setError(null);
         try {
             const data = await registerRequest({ username, password });
+            
+            // Toast success
+            toast.success('Đăng ký thành công! 🎉', {
+                duration: 3000,
+            });
+            
             return data;
         } catch (err) {
             const message =
@@ -46,6 +68,12 @@ export function useAuth() {
                 err?.message ||
                 'Đăng ký thất bại, vui lòng thử lại';
             setError(message);
+            
+            // Toast error
+            toast.error(message, {
+                duration: 4000,
+            });
+            
             throw err;
         } finally {
             setLoading(false);
@@ -55,6 +83,11 @@ export function useAuth() {
     const logout = useCallback(() => {
         clearAuthUser();
         setUser(null);
+        
+        // Toast notification
+        toast.success('Đã đăng xuất thành công', {
+            duration: 2000,
+        });
     }, []);
 
     return {

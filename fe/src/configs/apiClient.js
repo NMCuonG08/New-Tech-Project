@@ -15,12 +15,13 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
     (config) => {
         try {
-            const token = localStorage.getItem('access_token');
+            // Thử lấy token từ 'auth_token' (mới) hoặc 'access_token' (cũ)
+            const token = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
         } catch (e) {
-            console.warn('Cannot read access_token from localStorage', e);
+            console.warn('Cannot read token from localStorage', e);
         }
         return config;
     },

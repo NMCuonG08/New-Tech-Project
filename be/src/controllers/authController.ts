@@ -28,8 +28,10 @@ export const login = async (req: Request, res: Response) => {
         .json({ message: "username và password là bắt buộc" });
     }
 
-    const user = await authService.login(username, password);
-    return res.status(200).json({ id: user.id, username: user.username });
+    const { user, token } = await authService.login(username, password);
+    return res
+      .status(200)
+      .json({ id: user.id, username: user.username, token });
   } catch (err: any) {
     return res.status(401).json({ message: err.message || "Login failed" });
   }

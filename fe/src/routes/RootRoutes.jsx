@@ -3,6 +3,7 @@ import App from '../App';
 import { useAuth } from '../hooks/useAuth';
 import { LoginPage } from '../pages/Auth/LoginPage';
 import { RegisterPage } from '../pages/Auth/RegisterPage';
+import { OAuth2CallbackPage } from '../pages/Auth/OAuth2CallbackPage';
 
 function ProtectedRoute({ children }) {
     const { isAuthenticated } = useAuth();
@@ -87,6 +88,12 @@ export function RootRoutes() {
             <Route element={<RootLayout />}>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                
+                {/* OAuth2 Callback Routes - Backend sẽ redirect về đây */}
+                <Route path="/auth/callback/google" element={<OAuth2CallbackPage />} />
+                <Route path="/auth/callback/github" element={<OAuth2CallbackPage />} />
+                <Route path="/auth/callback/facebook" element={<OAuth2CallbackPage />} />
+                
                 <Route path="/" element={<App />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

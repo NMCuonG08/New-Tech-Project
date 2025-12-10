@@ -5,6 +5,9 @@ import { AppDataSource } from "./data-source";
 import { ENV } from "./config/env";
 import authRoutes from "./routes/authRoutes";
 import aiRoutes from "./routes/ai.route";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
