@@ -270,7 +270,7 @@ export function RegisterForm({ onRegister, loading, error, onSwitchToLogin }) {
                 </form>
 
                 {/* OAuth2 Buttons */}
-                <OAuth2Buttons />
+                <OAuth2Buttons mode="register" />
 
                 {/* Switch to Login */}
                 {onSwitchToLogin && (

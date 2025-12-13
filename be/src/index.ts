@@ -6,10 +6,26 @@ import { ENV } from "./config/env";
 import authRoutes from "./routes/authRoutes";
 import aiRoutes from "./routes/ai.route";
 import dotenv from "dotenv";
+import session from "express-session";
+import "./config/passport";
+import passport from "passport";
 
 dotenv.config();
 
 const app = express();
+
+// Session configuration - required for Passport
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your-session-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
+  })
+);
 
 // CORS configuration - cho phép FE connect
 app.use(
@@ -22,6 +38,8 @@ app.use(
 );
 
 app.use(express.json());
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.get("/", (_req, res) => {
   res.send("Hello from Express + TypeScript + TypeORM!");

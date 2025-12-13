@@ -10,9 +10,9 @@ export function OAuth2CallbackPage() {
     const [status, setStatus] = useState('processing'); // processing, success, error
 
     useEffect(() => {
-        const code = searchParams.get('code');
+        const authStatus = searchParams.get('auth');
+        const userParam = searchParams.get('user');
         const error = searchParams.get('error');
-        const provider = window.location.pathname.split('/')[3]; // /auth/callback/google
 
         if (error) {
             setStatus('error');
@@ -21,30 +21,53 @@ export function OAuth2CallbackPage() {
             return;
         }
 
-        if (!code) {
-            setStatus('error');
-            toast.error('Không tìm thấy mã xác thực');
-            setTimeout(() => navigate('/login'), 2000);
-            return;
-        }
-
-        // Xử lý OAuth2 callback
-        handleOAuth2Callback(provider, code)
-            .then((data) => {
-                saveAuthUser(data);
+        if (authStatus === 'success' && userParam) {
+            try {
+                const user = JSON.parse(decodeURIComponent(userParam));
+                
+                // Save user data to localStorage
+                saveAuthUser({ user, token: null }); // You may want to generate a token on backend
                 setStatus('success');
                 
-                const username = data.user?.username || data.username || 'User';
+                const username = user.username || user.email || 'User';
                 toast.success(`Chào mừng ${username}! 🎉`);
                 
                 setTimeout(() => navigate('/'), 1500);
-            })
-            .catch((err) => {
+            } catch (err) {
                 setStatus('error');
-                const message = err?.response?.data?.message || 'Đăng nhập thất bại';
-                toast.error(message);
+                toast.error('Lỗi xử lý dữ liệu người dùng');
                 setTimeout(() => navigate('/login'), 2000);
-            });
+            }
+            return;
+        }
+
+        // Fallback for old OAuth2 flow with code parameter
+        const code = searchParams.get('code');
+        const provider = window.location.pathname.split('/')[3]; // /auth/callback/google
+
+        if (code) {
+            // Xử lý OAuth2 callback
+            handleOAuth2Callback(provider, code)
+                .then((data) => {
+                    saveAuthUser(data);
+                    setStatus('success');
+                    
+                    const username = data.user?.username || data.username || 'User';
+                    toast.success(`Chào mừng ${username}! 🎉`);
+                    
+                    setTimeout(() => navigate('/'), 1500);
+                })
+                .catch((err) => {
+                    setStatus('error');
+                    const message = err?.response?.data?.message || 'Đăng nhập thất bại';
+                    toast.error(message);
+                    setTimeout(() => navigate('/login'), 2000);
+                });
+        } else {
+            setStatus('error');
+            toast.error('Không tìm thấy thông tin xác thực');
+            setTimeout(() => navigate('/login'), 2000);
+        }
     }, [searchParams, navigate]);
 
     return (
