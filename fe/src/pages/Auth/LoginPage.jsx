@@ -9,7 +9,8 @@ export function LoginPage() {
     const handleLogin = async (credentials) => {
         try {
             await login(credentials);
-            navigate('/', { replace: true });
+            // Reload the page to update user state across all components
+            window.location.href = '/';
         } catch (err) {
             // Error đã được xử lý trong useAuth
         }

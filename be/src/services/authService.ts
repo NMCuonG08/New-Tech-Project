@@ -15,7 +15,17 @@ export class AuthService {
 
   async login(username: string, password: string): Promise<{ user: User; token: string }> {
     const user = await userRepository.findOne({ where: { username } });
-    if (!user || user.password !== password) {
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
+
+    // Check if user has a password (not an OAuth user)
+    if (!user.password) {
+      throw new Error("This account uses OAuth login. Please sign in with Google.");
+    }
+
+    // Verify password
+    if (user.password !== password) {
       throw new Error("Invalid credentials");
     }
 
