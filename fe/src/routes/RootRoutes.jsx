@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import { LoginPage } from '../pages/Auth/LoginPage';
 import { RegisterPage } from '../pages/Auth/RegisterPage';
 import { OAuth2CallbackPage } from '../pages/Auth/OAuth2CallbackPage';
+import { ProfilePage } from '../pages/User/ProfilePage';
+import { DashboardPage } from '../pages/Admin/DashboardPage';
 
 function ProtectedRoute({ children }) {
     const { isAuthenticated } = useAuth();
@@ -60,18 +62,32 @@ function RootLayout() {
                                 </Link>
                             </>
                         ) : (
-                            <div className="flex items-center gap-2 rounded-full bg-slate-900/70 px-3 py-1 text-[11px] text-slate-200">
-                                <span className="max-w-[140px] truncate font-medium">
-                                    {user?.username}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={logout}
-                                    className="rounded-full border border-white/20 px-2 py-0.5 text-[11px] text-slate-300 hover:border-white/40 hover:text-white"
+                            <>
+                                <Link
+                                    to="/profile"
+                                    className="rounded-full border border-white/20 px-3 py-1 text-slate-200 hover:border-blue-400 hover:bg-blue-500/20 hover:text-blue-100 transition"
                                 >
-                                    Đăng xuất
-                                </button>
-                            </div>
+                                    👤 Profile
+                                </Link>
+                                <Link
+                                    to="/admin"
+                                    className="rounded-full border border-white/20 px-3 py-1 text-slate-200 hover:border-purple-400 hover:bg-purple-500/20 hover:text-purple-100 transition"
+                                >
+                                    📊 Dashboard
+                                </Link>
+                                <div className="flex items-center gap-2 rounded-full bg-slate-900/70 px-3 py-1 text-[11px] text-slate-200">
+                                    <span className="max-w-[140px] truncate font-medium">
+                                        {user?.username}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={logout}
+                                        className="rounded-full border border-white/20 px-2 py-0.5 text-[11px] text-slate-300 hover:border-white/40 hover:text-white"
+                                    >
+                                        Đăng xuất
+                                    </button>
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>
@@ -93,6 +109,10 @@ export function RootRoutes() {
                 <Route path="/auth/callback/google" element={<OAuth2CallbackPage />} />
                 <Route path="/auth/callback/github" element={<OAuth2CallbackPage />} />
                 <Route path="/auth/callback/facebook" element={<OAuth2CallbackPage />} />
+                
+                {/* Protected Routes */}
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/admin" element={<DashboardPage />} />
                 
                 <Route path="/" element={<App />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
