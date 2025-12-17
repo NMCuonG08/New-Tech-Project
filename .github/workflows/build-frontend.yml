@@ -1,0 +1,66 @@
+name: CI - Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "fe/**"
+      - ".github/workflows/build-frontend.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "fe/**"
+      - ".github/workflows/build-frontend.yml"
+
+jobs:
+  build-and-test:
+    name: Build and Test Frontend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./fe
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: fe/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Error: dist directory not found after build"
+            exit 1
+          fi
+          if [ ! -f "dist/index.html" ]; then
+            echo "Error: dist/index.html not found after build"
+            exit 1
+          fi
+          echo "Build output verified successfully"
+
+      - name: Check build artifacts size
+        run: |
+          echo "Build artifacts:"
+          du -sh dist/ || echo "No dist directory found"
+          ls -la dist/ | head -20 || echo "No dist directory found"

@@ -1,0 +1,65 @@
+name: CI - Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "be/**"
+      - ".github/workflows/build-backend.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "be/**"
+      - ".github/workflows/build-backend.yml"
+
+jobs:
+  build-and-test:
+    name: Build and Test Backend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./be
+
+    strategy:
+      matrix:
+        node-version: [24.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: be/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Error: dist directory not found after build"
+            exit 1
+          fi
+          if [ ! -f "dist/index.js" ]; then
+            echo "Error: dist/index.js not found after build"
+            exit 1
+          fi
+          echo "Build output verified successfully"
+
+      - name: Check for build artifacts
+        run: |
+          echo "Build artifacts:"
+          ls -la dist/ || echo "No dist directory found"
