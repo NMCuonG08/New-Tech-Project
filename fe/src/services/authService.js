@@ -21,9 +21,11 @@ export async function handleOAuth2Callback(provider, code) {
 // Lưu user và token vào localStorage
 export function saveAuthUser(data) {
     // Nếu backend trả về { user, token }, lưu riêng
-    if (data.user && data.token) {
+    if (data.user && data.token !== undefined) {
         localStorage.setItem('auth_user', JSON.stringify(data.user));
-        localStorage.setItem('auth_token', data.token);
+        if (data.token) {
+            localStorage.setItem('auth_token', data.token);
+        }
     } else {
         // Tương thích với backend cũ (chỉ trả về user)
         localStorage.setItem('auth_user', JSON.stringify(data));

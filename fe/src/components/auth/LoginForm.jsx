@@ -175,8 +175,8 @@ export function LoginForm({ onLogin, loading, error, onSwitchToRegister }) {
                     </motion.button>
                 </form>
 
-                {/* OAuth2 Buttons */}
-                <OAuth2Buttons />
+                {/* OAuth2 Buttons - Login Mode */}
+                <OAuth2Buttons mode="login" />
 
                 {/* Switch to Register */}
                 {onSwitchToRegister && (
