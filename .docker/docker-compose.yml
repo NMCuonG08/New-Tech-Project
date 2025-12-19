@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # ==================== DATABASE ====================
+  mysql:
+    image: mysql:8.0
+    container_name: weather-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-my_app_db}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - weather-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ==================== BACKEND ====================
+  backend:
+    build:
+      context: ../be
+      dockerfile: Dockerfile
+    container_name: weather-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=${MYSQL_ROOT_PASSWORD:-root123}
+      - DB_NAME=${MYSQL_DATABASE:-my_app_db}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - OPEN_METEO_BASE_URL=https://api.open-meteo.com/v1
+      - OPEN_METEO_ARCHIVE_URL=https://archive-api.open-meteo.com/v1
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - weather-network
+
+  # ==================== FRONTEND ====================
+  frontend:
+    build:
+      context: ../fe
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:3000/api}
+    container_name: weather-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - weather-network
+
+  # ==================== AI SERVICE ====================
+  ai:
+    build:
+      context: ../ai
+      dockerfile: Dockerfile
+    container_name: weather-ai
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - weather-network
+
+# ==================== NETWORKS ====================
+networks:
+  weather-network:
+    driver: bridge
+
+# ==================== VOLUMES ====================
+volumes:
+  mysql_data:
+    driver: local

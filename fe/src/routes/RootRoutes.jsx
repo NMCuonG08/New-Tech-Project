@@ -63,8 +63,7 @@ function RootLayout() {
                                 W
                             </span>
                             <div>
-                                <p className="text-sm font-semibold">Weather PWA</p>
-                                <p className="text-[11px] text-slate-400">Real-time · Offline ready</p>
+                                <p className="text-sm font-semibold">Weather </p>
                             </div>
                         </Link>
 
@@ -72,9 +71,9 @@ function RootLayout() {
                         <NavbarCitySearch onCitySelect={ handleCitySelect } />
                     </div>
 
-                    {/* Navigation Menu - Only show when authenticated */ }
+                    {/* Navigation Menu - Only show when authenticated on large screens */ }
                     { isAuthenticated && (
-                        <nav className="hidden md:flex items-center gap-2">
+                        <nav className="hidden lg:flex items-center gap-2">
                             { navItems.map((item) => {
                                 const Icon = typeof item.icon === 'string' ? null : item.icon;
                                 const isActive = location.pathname === item.to;
@@ -122,26 +121,29 @@ function RootLayout() {
                             <>
                                 <Link
                                     to="/profile"
-                                    className="rounded-full border border-white/20 px-3 py-1 text-slate-200 hover:border-blue-400 hover:bg-blue-500/20 hover:text-blue-100 transition"
+                                    className="rounded-full border border-white/20 px-2 lg:px-3 py-1 text-slate-200 hover:border-blue-400 hover:bg-blue-500/20 hover:text-blue-100 transition"
+                                    title="Profile"
                                 >
-                                    👤 Profile
+                                    👤<span className="hidden lg:inline"> Profile</span>
                                 </Link>
                                 <Link
                                     to="/admin"
-                                    className="rounded-full border border-white/20 px-3 py-1 text-slate-200 hover:border-purple-400 hover:bg-purple-500/20 hover:text-purple-100 transition"
+                                    className="rounded-full border border-white/20 px-2 lg:px-3 py-1 text-slate-200 hover:border-purple-400 hover:bg-purple-500/20 hover:text-purple-100 transition"
+                                    title="Dashboard"
                                 >
-                                    📊 Dashboard
+                                    📊<span className="hidden lg:inline"> Dashboard</span>
                                 </Link>
-                                <div className="flex items-center gap-2 rounded-full bg-slate-900/70 px-3 py-1 text-[11px] text-slate-200">
-                                    <span className="max-w-[140px] truncate font-medium">
+                                <div className="flex items-center gap-1.5 lg:gap-2 rounded-full bg-slate-900/70 px-2 lg:px-3 py-1 text-[11px] text-slate-200">
+                                    <span className="max-w-[60px] lg:max-w-[100px] truncate font-medium">
                                         { user?.username }
                                     </span>
                                     <button
                                         type="button"
                                         onClick={ logout }
-                                        className="rounded-full border border-white/20 px-2 py-0.5 text-[11px] text-slate-300 hover:border-white/40 hover:text-white"
+                                        className="rounded-full border border-white/20 px-1.5 lg:px-2 py-0.5 text-[10px] lg:text-[11px] text-slate-300 hover:border-white/40 hover:text-white"
                                     >
-                                        Đăng xuất
+                                        <span className="hidden lg:inline">Đăng xuất</span>
+                                        <span className="lg:hidden">X</span>
                                     </button>
                                 </div>
                             </>
@@ -151,7 +153,7 @@ function RootLayout() {
 
                 {/* Mobile Navigation - Only show when authenticated */ }
                 { isAuthenticated && (
-                    <div className="md:hidden border-t border-white/10">
+                    <div className="lg:hidden border-t border-white/10">
                         <div className="flex justify-around py-2 px-4">
                             { navItems.map((item) => {
                                 const Icon = typeof item.icon === 'string' ? null : item.icon;

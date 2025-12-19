@@ -95,32 +95,34 @@ export function NavbarCitySearch({ onCitySelect }) {
     };
 
     return (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 lg:gap-3">
             {/* Current Location Display */ }
-            <div className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 text-xs">
-                <MapPin className="h-3.5 w-3.5 text-blue-400" />
-                <span className="font-medium text-slate-200">{ currentCity }</span>
+            <div className="flex items-center gap-1.5 rounded-full bg-white/5 px-2 lg:px-3 py-1.5 text-xs">
+                <MapPin className="h-3.5 w-3.5 text-blue-400 flex-shrink-0" />
+                <span className="font-medium text-slate-200 truncate max-w-[60px] lg:max-w-[100px]">{ currentCity }</span>
             </div>
 
             {/* Forecast Navigation Links */ }
             <nav>
-                <ul className="flex items-center gap-2">
+                <ul className="flex items-center gap-1.5">
                     <li>
                         <Link
                             to={ `/hourly?city=${encodeURIComponent(currentCity)}` }
-                            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:border-blue-400 hover:bg-blue-500/20 hover:text-blue-100"
+                            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2 lg:px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:border-blue-400 hover:bg-blue-500/20 hover:text-blue-100"
+                            title="Hourly Forecast"
                         >
-                            <Clock className="h-3.5 w-3.5" />
-                            <span>Hourly</span>
+                            <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+                            <span className="hidden lg:inline">Hourly</span>
                         </Link>
                     </li>
                     <li>
                         <Link
                             to={ `/daily?city=${encodeURIComponent(currentCity)}` }
-                            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:border-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-100"
+                            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2 lg:px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:border-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-100"
+                            title="Daily Forecast"
                         >
-                            <Calendar className="h-3.5 w-3.5" />
-                            <span>Daily</span>
+                            <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
+                            <span className="hidden lg:inline">Daily</span>
                         </Link>
                     </li>
                 </ul>
@@ -129,15 +131,15 @@ export function NavbarCitySearch({ onCitySelect }) {
             {/* Search Input */ }
             <div ref={ searchRef } className="relative">
                 <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
                         <Search className="h-3.5 w-3.5 text-slate-400" />
                     </div>
                     <input
                         type="text"
                         value={ query }
                         onChange={ (e) => setQuery(e.target.value) }
-                        placeholder="Tìm thành phố..."
-                        className="w-48 rounded-full border border-white/10 bg-slate-900/60 py-1.5 pl-9 pr-8 text-xs font-medium text-slate-100 placeholder-slate-500 backdrop-blur transition-all focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:w-64"
+                        placeholder="Tìm..."
+                        className="w-24 lg:w-40 rounded-full border border-white/10 bg-slate-900/60 py-1.5 pl-8 pr-7 text-xs font-medium text-slate-100 placeholder-slate-500 backdrop-blur transition-all focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:w-48"
                         style={ { colorScheme: 'dark' } }
                     />
                     { query && (
