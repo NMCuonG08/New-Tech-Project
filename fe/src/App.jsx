@@ -1,4 +1,4 @@
-// App component - Main app (OAuth callback handler)
+// App component - OAuth callback handler
 
 import { useEffect } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
