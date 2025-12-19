@@ -19,3 +19,4 @@ const model = genAI.getGenerativeModel({
 });
 
 export { model };
+

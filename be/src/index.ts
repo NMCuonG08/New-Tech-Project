@@ -5,6 +5,8 @@ import { AppDataSource } from "./data-source";
 import { ENV } from "./config/env";
 import authRoutes from "./routes/authRoutes";
 import aiRoutes from "./routes/ai.route";
+import locationRoutes from "./routes/locationRoutes";
+import weatherRoutes from "./routes/weatherRoutes";
 import dotenv from "dotenv";
 import session from "express-session";
 import "./config/passport";
@@ -47,6 +49,8 @@ app.get("/", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/locations", locationRoutes);
+app.use("/api/weather", weatherRoutes);
 AppDataSource.initialize()
   .then(() => {
     console.log("Data Source has been initialized");

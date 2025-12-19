@@ -1,14 +1,12 @@
 {
-  "name": "be",
+  "name": "ai-service",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "AI Weather Service Microservice",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --watch src --ext ts --exec ts-node -r tsconfig-paths/register src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
-    "seed:locations": "ts-node -r tsconfig-paths/register src/seeds/locationSeed.ts"
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -22,21 +20,12 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
-    "express-session": "^1.18.2",
-    "jsonwebtoken": "^9.0.3",
-    "mysql2": "^3.15.3",
-    "passport": "^0.7.0",
-    "passport-google-oauth20": "^2.0.0",
-    "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.28"
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/express-session": "^1.18.2",
-    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.1",
-    "@types/passport-google-oauth20": "^2.0.17",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",

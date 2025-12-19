@@ -180,7 +180,7 @@ const INTENT_DEFINITIONS = {
 
 export { INTENT_DEFINITIONS };
 
-import { model } from "@/config/gemini";
+import { model } from "../config/gemini";
 
 class IntentClassifier {
   model: any;
@@ -268,3 +268,4 @@ RESPOND IN JSON FORMAT ONLY:
 }
 
 export default IntentClassifier;
+
