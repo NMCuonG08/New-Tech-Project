@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "set TS_NODE_TRANSPILE_ONLY=true && nodemon --watch src --ext ts,json --exec ts-node -r tsconfig-paths/register src/index.ts",
+    "dev": "nodemon",
     "build": "tsc",
     "start": "node dist/index.js",
     "seed:locations": "ts-node -r tsconfig-paths/register src/seeds/locationSeed.ts"
