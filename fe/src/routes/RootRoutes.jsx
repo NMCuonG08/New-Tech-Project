@@ -6,6 +6,10 @@ import { RegisterPage } from '../pages/Auth/RegisterPage';
 import { OAuth2CallbackPage } from '../pages/Auth/OAuth2CallbackPage';
 import { ProfilePage } from '../pages/User/ProfilePage';
 import { DashboardPage } from '../pages/Admin/DashboardPage';
+import { FavoritesPage } from '../pages/User/FavoritesPage';
+import { AlertsPage } from '../pages/User/AlertsPage';
+import { NotesPage } from '../pages/User/NotesPage';
+import { Heart, Bell, StickyNote } from 'lucide-react';
 
 function ProtectedRoute({ children }) {
     const { isAuthenticated } = useAuth();
@@ -25,6 +29,14 @@ function RootLayout() {
     const isLogin = location.pathname === '/login';
     const isRegister = location.pathname === '/register';
 
+    // Navigation items for authenticated users
+    const navItems = [
+        { to: '/', label: 'Weather', icon: '🌤️' },
+        { to: '/favorites', label: 'Favorites', icon: Heart },
+        { to: '/alerts', label: 'Alerts', icon: Bell },
+        { to: '/notes', label: 'Notes', icon: StickyNote },
+    ];
+
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100">
             <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/80 backdrop-blur">
@@ -38,6 +50,31 @@ function RootLayout() {
                             <p className="text-[11px] text-slate-400">Real-time · Offline ready</p>
                         </div>
                     </Link>
+
+                    {/* Navigation Menu - Only show when authenticated */}
+                    {isAuthenticated && (
+                        <nav className="hidden md:flex items-center gap-2">
+                            {navItems.map((item) => {
+                                const Icon = typeof item.icon === 'string' ? null : item.icon;
+                                const isActive = location.pathname === item.to;
+                                
+                                return (
+                                    <Link
+                                        key={item.to}
+                                        to={item.to}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all ${
+                                            isActive
+                                                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50'
+                                                : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                                        }`}
+                                    >
+                                        {Icon ? <Icon className="w-4 h-4" /> : <span>{item.icon}</span>}
+                                        <span>{item.label}</span>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+                    )}
 
                     <div className="flex items-center gap-3 text-xs">
                         {!isAuthenticated ? (
@@ -91,6 +128,33 @@ function RootLayout() {
                         )}
                     </div>
                 </div>
+
+                {/* Mobile Navigation - Only show when authenticated */}
+                {isAuthenticated && (
+                    <div className="md:hidden border-t border-white/10">
+                        <div className="flex justify-around py-2 px-4">
+                            {navItems.map((item) => {
+                                const Icon = typeof item.icon === 'string' ? null : item.icon;
+                                const isActive = location.pathname === item.to;
+                                
+                                return (
+                                    <Link
+                                        key={item.to}
+                                        to={item.to}
+                                        className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-all ${
+                                            isActive
+                                                ? 'text-blue-300'
+                                                : 'text-slate-400 hover:text-white'
+                                        }`}
+                                    >
+                                        {Icon ? <Icon className="w-5 h-5" /> : <span className="text-lg">{item.icon}</span>}
+                                        <span>{item.label}</span>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </header>
 
             <Outlet />
@@ -113,6 +177,11 @@ export function RootRoutes() {
                 {/* Protected Routes */}
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/admin" element={<DashboardPage />} />
+                
+                {/* New Feature Routes - Tạm thời không cần login để test UI */}
+                <Route path="/favorites" element={<FavoritesPage />} />
+                <Route path="/alerts" element={<AlertsPage />} />
+                <Route path="/notes" element={<NotesPage />} />
                 
                 <Route path="/" element={<App />} />
                 <Route path="*" element={<Navigate to="/" replace />} />

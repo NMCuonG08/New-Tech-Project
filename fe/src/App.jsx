@@ -6,6 +6,7 @@ import { useWeather } from './hooks/useWeather';
 import { useOffline } from './hooks/useOffline';
 import { useNotifications } from './hooks/useNotifications';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
+import { useWebSocket } from './hooks/useWebSocket';
 import { WeatherCard } from './components/WeatherCard';
 import { ForecastCard } from './components/ForecastCard';
 import { OfflineBanner } from './components/OfflineBanner';
@@ -35,9 +36,12 @@ import {
 const WEATHER_SYNC_TAG = 'weather-sync-refresh';
 
 function App() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  
+  // Initialize WebSocket connection (only when authenticated)
+  const { isConnected: wsConnected } = useWebSocket();
 
   // Handle OAuth2 callback
   useEffect(() => {
