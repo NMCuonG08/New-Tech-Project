@@ -1,6 +1,6 @@
 // src/utils/parameterExtractor.js
 
-import { model } from "@/config/gemini";
+import { model } from "../config/gemini";
 
 class ParameterExtractor {
   model: any;
@@ -135,3 +135,4 @@ RESPOND IN JSON FORMAT ONLY:
 }
 
 export default ParameterExtractor;
+

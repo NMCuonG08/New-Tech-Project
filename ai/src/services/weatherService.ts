@@ -1,7 +1,6 @@
 // src/services/weatherService.ts
 
 import axios from "axios";
-import { ENV } from "../config/env";
 
 interface CityCoordinates {
   lat: number;
@@ -195,3 +194,4 @@ class WeatherService {
 }
 
 export default WeatherService;
+

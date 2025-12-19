@@ -1,6 +1,6 @@
 // src/utils/responseGenerator.js
 
-import { model } from "@/config/gemini";
+import { model } from "../config/gemini";
 
 class ResponseGenerator {
   model: any;
@@ -121,3 +121,4 @@ Generate the response now:`;
 }
 
 export default ResponseGenerator;
+

@@ -1,15 +1,17 @@
 import { Request, Response } from "express";
-import aiClient from "../services/aiClient";
+import AIService from "../services/aiService";
 import { ChatRequestDto } from "../dtos/ChatRequestDto";
 import { WeatherRequestDto } from "../dtos/WeatherRequestDto";
 import { SessionIdParamDto } from "../dtos/SessionIdParamDto";
+
+const aiService = new AIService();
 
 export const chat = async (req: Request, res: Response) => {
   try {
     const dto = (req as any).dto as ChatRequestDto;
 
-    // Call AI service
-    const result = await aiClient.chat(
+    // Process the query
+    const result = await aiService.processQuery(
       dto.message,
       dto.sessionId || "default-session"
     );
@@ -27,11 +29,14 @@ export const chat = async (req: Request, res: Response) => {
   }
 };
 
-export const getContext = async (req: Request, res: Response) => {
+export const getContext = (req: Request, res: Response) => {
   try {
     const dto = (req as any).dto as SessionIdParamDto;
-    const result = await aiClient.getContext(dto.sessionId);
-    res.json(result);
+    const context = aiService.contextService.getContext(dto.sessionId);
+    res.json({
+      success: true,
+      context,
+    });
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
@@ -42,11 +47,14 @@ export const getContext = async (req: Request, res: Response) => {
   }
 };
 
-export const clearContext = async (req: Request, res: Response) => {
+export const clearContext = (req: Request, res: Response) => {
   try {
     const dto = (req as any).dto as SessionIdParamDto;
-    const result = await aiClient.clearContext(dto.sessionId);
-    res.json(result);
+    aiService.contextService.clearContext(dto.sessionId);
+    res.json({
+      success: true,
+      message: "Context cleared",
+    });
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
@@ -60,8 +68,11 @@ export const clearContext = async (req: Request, res: Response) => {
 export const getCurrentWeather = async (req: Request, res: Response) => {
   try {
     const dto = (req as any).dto as WeatherRequestDto;
-    const result = await aiClient.getCurrentWeather(dto.city);
-    res.json(result);
+    const weather = await aiService.weatherService.getCurrentWeather(dto.city);
+    res.json({
+      success: true,
+      data: weather,
+    });
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
@@ -71,3 +82,4 @@ export const getCurrentWeather = async (req: Request, res: Response) => {
     });
   }
 };
+

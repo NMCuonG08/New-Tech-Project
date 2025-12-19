@@ -7,5 +7,5 @@ export const ENV = {
   DB_USERNAME: process.env.DB_USERNAME || "root",
   DB_PASSWORD: process.env.DB_PASSWORD || "",
   DB_NAME: process.env.DB_NAME || "my_app_db",
-  GEMINI_API_KEY: (process.env.GEMINI_API_KEY || "") as string,
+  AI_SERVICE_URL: process.env.AI_SERVICE_URL || "http://localhost:3001",
 };
