@@ -13,9 +13,35 @@ import {
     CheckCircle,
     Clock,
     Zap,
+    MapPin,
+    Plus,
+    Search,
+    Globe
 } from 'lucide-react';
+import { useAdminCities } from '../../hooks/useAdminCities';
+import { AddCityModal } from '../../components/admin/AddCityModal';
+import { CityManagementTable } from '../../components/admin/CityManagementTable';
+import toast from 'react-hot-toast';
 
 export function DashboardPage() {
+    // City Management
+    const { 
+        cities, 
+        addCityWithValidation, 
+        deleteCity, 
+        toggleCityStatus,
+        getStats,
+        searchCities
+    } = useAdminCities();
+    
+    const [isAddCityModalOpen, setIsAddCityModalOpen] = useState(false);
+    const [citySearchQuery, setCitySearchQuery] = useState('');
+    const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'cities'
+    
+    const cityStats = getStats();
+    const displayedCities = citySearchQuery 
+        ? searchCities(citySearchQuery)
+        : cities;
     // Mock data - Backend sẽ thay thế bằng API
     const [stats] = useState({
         totalUsers: 1234,
@@ -67,18 +93,74 @@ export function DashboardPage() {
         }
     };
 
+    const handleAddCity = (cityData) => {
+        const success = addCityWithValidation(cityData);
+        if (success) {
+            toast.success(`${cityData.name} added successfully!`);
+        } else {
+            toast.error('Failed to add city. Please check the data.');
+        }
+    };
+
+    const handleDeleteCity = (id) => {
+        const city = cities.find(c => c.id === id);
+        if (confirm(`Are you sure you want to delete ${city?.name}?`)) {
+            deleteCity(id);
+            toast.success('City deleted successfully');
+        }
+    };
+
+    const handleToggleStatus = (id) => {
+        const city = cities.find(c => c.id === id);
+        toggleCityStatus(id);
+        toast.success(`${city?.name} ${city?.isActive ? 'deactivated' : 'activated'}`);
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-8 px-4">
             <div className="mx-auto max-w-7xl">
-                {/* Header */}
+                {/* Header with Tabs */}
                 <div className="mb-8">
                     <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
                         <BarChart3 size={36} className="text-blue-400" />
                         Admin Dashboard
                     </h1>
-                    <p className="text-slate-400">
+                    <p className="text-slate-400 mb-6">
                         Tổng quan hệ thống và phân tích dữ liệu
                     </p>
+
+                    {/* Tabs */}
+                    <div className="flex gap-2 border-b border-white/10">
+                        <button
+                            onClick={() => setActiveTab('overview')}
+                            className={`px-4 py-2 text-sm font-medium transition-colors ${
+                                activeTab === 'overview'
+                                    ? 'text-blue-400 border-b-2 border-blue-400'
+                                    : 'text-slate-400 hover:text-white'
+                            }`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4" />
+                                Overview
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('cities')}
+                            className={`px-4 py-2 text-sm font-medium transition-colors ${
+                                activeTab === 'cities'
+                                    ? 'text-blue-400 border-b-2 border-blue-400'
+                                    : 'text-slate-400 hover:text-white'
+                            }`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4" />
+                                City Management
+                                <span className="px-1.5 py-0.5 text-xs bg-blue-500/20 text-blue-400 rounded">
+                                    {cityStats.total}
+                                </span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats Grid */}
@@ -271,7 +353,109 @@ export function DashboardPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* City Management Tab */}
+                {activeTab === 'cities' && (
+                    <div className="space-y-6">
+                        {/* City Stats */}
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4 backdrop-blur-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <Globe className="w-5 h-5 text-blue-400" />
+                                    <p className="text-sm text-slate-400">Total Cities</p>
+                                </div>
+                                <p className="text-2xl font-bold text-white">{cityStats.total}</p>
+                            </div>
+                            <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4 backdrop-blur-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <CheckCircle className="w-5 h-5 text-green-400" />
+                                    <p className="text-sm text-slate-400">Active</p>
+                                </div>
+                                <p className="text-2xl font-bold text-green-400">{cityStats.active}</p>
+                            </div>
+                            <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4 backdrop-blur-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <AlertCircle className="w-5 h-5 text-slate-400" />
+                                    <p className="text-sm text-slate-400">Inactive</p>
+                                </div>
+                                <p className="text-2xl font-bold text-slate-400">{cityStats.inactive}</p>
+                            </div>
+                            <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4 backdrop-blur-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <MapPin className="w-5 h-5 text-purple-400" />
+                                    <p className="text-sm text-slate-400">Countries</p>
+                                </div>
+                                <p className="text-2xl font-bold text-purple-400">{cityStats.countries}</p>
+                            </div>
+                        </div>
+
+                        {/* City Management Section */}
+                        <div className="rounded-2xl border border-white/10 bg-slate-900/50 backdrop-blur-sm">
+                            {/* Toolbar */}
+                            <div className="p-6 border-b border-white/10">
+                                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                                    <div>
+                                        <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                                            <MapPin className="w-5 h-5" />
+                                            Cities Database
+                                        </h2>
+                                        <p className="text-sm text-slate-400 mt-1">
+                                            Manage cities available for user selection
+                                        </p>
+                                    </div>
+                                    
+                                    <button
+                                        onClick={() => setIsAddCityModalOpen(true)}
+                                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Add City
+                                    </button>
+                                </div>
+
+                                {/* Search Bar */}
+                                <div className="mt-4 relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                    <input
+                                        type="text"
+                                        value={citySearchQuery}
+                                        onChange={(e) => setCitySearchQuery(e.target.value)}
+                                        placeholder="Search cities by name or country..."
+                                        className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-white/10 rounded-lg text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Table */}
+                            <div className="p-6">
+                                <CityManagementTable
+                                    cities={displayedCities}
+                                    onEdit={(city) => {
+                                        toast('Edit feature coming soon!', { icon: '🚧' });
+                                    }}
+                                    onDelete={handleDeleteCity}
+                                    onToggleStatus={handleToggleStatus}
+                                />
+                            </div>
+
+                            {/* Info */}
+                            <div className="p-4 border-t border-white/10 bg-blue-500/5">
+                                <p className="text-xs text-blue-300">
+                                    💡 <strong>Tip:</strong> Active cities will be available for users to select in the Favorites section. 
+                                    Inactive cities are hidden from users but data is preserved.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
+
+            {/* Add City Modal */}
+            <AddCityModal
+                isOpen={isAddCityModalOpen}
+                onClose={() => setIsAddCityModalOpen(false)}
+                onSubmit={handleAddCity}
+            />
         </div>
     );
 }

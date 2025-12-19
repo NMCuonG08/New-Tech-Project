@@ -1,0 +1,179 @@
+import { useEffect, useState, useRef } from 'react';
+import { io } from 'socket.io-client';
+import { toast } from 'react-hot-toast';
+import { useAuth } from './useAuth';
+import { useAlertsStore } from '../store/alertsStore';
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+export const useWebSocket = () => {
+  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+  const addAlert = useAlertsStore(state => state.addAlert);
+  const reconnectAttempts = useRef(0);
+  const MAX_RECONNECT_ATTEMPTS = 5;
+
+  useEffect(() => {
+    // Only connect if user is authenticated
+    if (!isAuthenticated || !user) {
+      return;
+    }
+
+    console.log('🔌 Initializing WebSocket connection...');
+
+    const newSocket = io(BACKEND_URL, {
+      withCredentials: true,
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: MAX_RECONNECT_ATTEMPTS
+    });
+
+    newSocket.on('connect', () => {
+      console.log('✅ WebSocket connected', newSocket.id);
+      setIsConnected(true);
+      reconnectAttempts.current = 0;
+      
+      // Join room with user ID
+      if (user?.id) {
+        newSocket.emit('join', user.id);
+        console.log('📡 Joined room:', user.id);
+      }
+
+      // Show connection toast
+      toast.success('🔔 Real-time alerts enabled', {
+        duration: 2000,
+        position: 'bottom-right'
+      });
+    });
+
+    newSocket.on('disconnect', (reason) => {
+      console.log('❌ WebSocket disconnected:', reason);
+      setIsConnected(false);
+      
+      if (reason === 'io server disconnect') {
+        // Server initiated disconnect, try to reconnect
+        newSocket.connect();
+      }
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('❌ WebSocket connection error:', error);
+      reconnectAttempts.current++;
+      
+      if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
+        toast.error('Failed to connect to real-time alerts', {
+          duration: 3000,
+          position: 'bottom-right'
+        });
+      }
+    });
+
+    // Listen for weather alerts
+    newSocket.on('weather-alert', (alert) => {
+      console.log('🔔 Received weather alert:', alert);
+      
+      // Map alert types to icons
+      const iconMap = {
+        rain: '🌧️',
+        temp_high: '🔥',
+        temp_low: '❄️',
+        aqi: '😷',
+        wind: '💨'
+      };
+
+      const icon = iconMap[alert.type] || '⚠️';
+
+      // Show toast notification
+      const severityColor = alert.severity === 'high' ? 'bg-red-500/90' : 
+                            alert.severity === 'medium' ? 'bg-orange-500/90' : 
+                            'bg-blue-500/90';
+      
+      toast(`${icon} ${alert.city}: ${alert.message}`, {
+        duration: 6000,
+        position: 'top-right',
+        style: {
+          background: severityColor,
+          color: 'white',
+        }
+      });
+
+      // Browser notification (if permission granted)
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`${icon} Weather Alert`, {
+          body: `${alert.city}: ${alert.message}`,
+          icon: '/weather-icon.png',
+          badge: '/badge.png',
+          tag: `alert-${alert.id}`,
+          requireInteraction: alert.severity === 'high'
+        });
+      }
+
+      // Save to alerts store
+      addAlert(alert);
+
+      // Play alert sound (optional)
+      try {
+        const audio = new Audio('/alert-sound.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(console.error);
+      } catch (error) {
+        console.error('Failed to play alert sound:', error);
+      }
+    });
+
+    // Listen for test alerts (for demo purposes)
+    newSocket.on('test-alert', (data) => {
+      console.log('🧪 Test alert received:', data);
+      toast('Test alert received!', { icon: '🧪' });
+    });
+
+    setSocket(newSocket);
+
+    // Cleanup on unmount
+    return () => {
+      console.log('🔌 Disconnecting WebSocket...');
+      newSocket.close();
+      setSocket(null);
+      setIsConnected(false);
+    };
+  }, [isAuthenticated, user, addAlert]);
+
+  // Request notification permission
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) {
+      toast.error('Browser does not support notifications');
+      return false;
+    }
+
+    if (Notification.permission === 'granted') {
+      return true;
+    }
+
+    if (Notification.permission !== 'denied') {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    }
+
+    return false;
+  };
+
+  // Send test alert (for development)
+  const sendTestAlert = () => {
+    if (socket && isConnected) {
+      socket.emit('test', { message: 'Test from client' });
+      toast('Test alert sent', { icon: '🧪' });
+    } else {
+      toast.error('Not connected to server');
+    }
+  };
+
+  return {
+    socket,
+    isConnected,
+    requestNotificationPermission,
+    sendTestAlert
+  };
+};

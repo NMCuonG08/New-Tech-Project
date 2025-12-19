@@ -6,8 +6,12 @@ import { RegisterPage } from '../pages/Auth/RegisterPage';
 import { OAuth2CallbackPage } from '../pages/Auth/OAuth2CallbackPage';
 import { ProfilePage } from '../pages/User/ProfilePage';
 import { DashboardPage } from '../pages/Admin/DashboardPage';
+import { FavoritesPage } from '../pages/User/FavoritesPage';
+import { AlertsPage } from '../pages/User/AlertsPage';
+import { NotesPage } from '../pages/User/NotesPage';
 import { WeatherPage } from '../pages/Weather/WeatherPage';
 import { NavbarCitySearch } from '../components/NavbarCitySearch';
+import { Heart, Bell, StickyNote } from 'lucide-react';
 
 function ProtectedRoute({ children }) {
     const { isAuthenticated } = useAuth();
@@ -26,6 +30,14 @@ function RootLayout() {
 
     const isLogin = location.pathname === '/login';
     const isRegister = location.pathname === '/register';
+
+    // Navigation items for authenticated users
+    const navItems = [
+        { to: '/weather', label: 'Weather', icon: '🌤️' },
+        { to: '/favorites', label: 'Favorites', icon: Heart },
+        { to: '/alerts', label: 'Alerts', icon: Bell },
+        { to: '/notes', label: 'Notes', icon: StickyNote },
+    ];
 
     // Handle city selection from navbar
     const handleCitySelect = (selectedCity) => {
@@ -56,6 +68,31 @@ function RootLayout() {
                         {/* City Search in Navbar */ }
                         <NavbarCitySearch onCitySelect={ handleCitySelect } />
                     </div>
+
+                    {/* Navigation Menu - Only show when authenticated */}
+                    {isAuthenticated && (
+                        <nav className="hidden md:flex items-center gap-2">
+                            {navItems.map((item) => {
+                                const Icon = typeof item.icon === 'string' ? null : item.icon;
+                                const isActive = location.pathname === item.to;
+                                
+                                return (
+                                    <Link
+                                        key={item.to}
+                                        to={item.to}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all ${
+                                            isActive
+                                                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50'
+                                                : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                                        }`}
+                                    >
+                                        {Icon ? <Icon className="w-4 h-4" /> : <span>{item.icon}</span>}
+                                        <span>{item.label}</span>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+                    )}
 
                     <div className="flex items-center gap-3 text-xs">
                         { !isAuthenticated ? (
@@ -109,6 +146,33 @@ function RootLayout() {
                         ) }
                     </div>
                 </div>
+
+                {/* Mobile Navigation - Only show when authenticated */}
+                {isAuthenticated && (
+                    <div className="md:hidden border-t border-white/10">
+                        <div className="flex justify-around py-2 px-4">
+                            {navItems.map((item) => {
+                                const Icon = typeof item.icon === 'string' ? null : item.icon;
+                                const isActive = location.pathname === item.to;
+                                
+                                return (
+                                    <Link
+                                        key={item.to}
+                                        to={item.to}
+                                        className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-all ${
+                                            isActive
+                                                ? 'text-blue-300'
+                                                : 'text-slate-400 hover:text-white'
+                                        }`}
+                                    >
+                                        {Icon ? <Icon className="w-5 h-5" /> : <span className="text-lg">{item.icon}</span>}
+                                        <span>{item.label}</span>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </header>
 
             <Outlet />
@@ -119,22 +183,33 @@ function RootLayout() {
 export function RootRoutes() {
     return (
         <Routes>
-            <Route element={ <RootLayout /> }>
-                <Route path="/login" element={ <LoginPage /> } />
-                <Route path="/register" element={ <RegisterPage /> } />
-
-                {/* OAuth2 Callback Routes - Backend sẽ redirect về đây */ }
-                <Route path="/auth/callback/google" element={ <OAuth2CallbackPage /> } />
-                <Route path="/auth/callback/github" element={ <OAuth2CallbackPage /> } />
-                <Route path="/auth/callback/facebook" element={ <OAuth2CallbackPage /> } />
-
-                {/* Protected Routes */ }
-                <Route path="/profile" element={ <ProfilePage /> } />
-                <Route path="/admin" element={ <DashboardPage /> } />
-
-                <Route path="/weather" element={ <WeatherPage /> } />
-                <Route path="/" element={ <Navigate to="/weather" replace /> } />
-                <Route path="*" element={ <Navigate to="/weather" replace /> } />
+            <Route element={<RootLayout />}>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                
+                {/* OAuth2 Callback Routes - Backend sẽ redirect về đây */}
+                <Route path="/auth/callback/google" element={<OAuth2CallbackPage />} />
+                <Route path="/auth/callback/github" element={<OAuth2CallbackPage />} />
+                <Route path="/auth/callback/facebook" element={<OAuth2CallbackPage />} />
+                
+                {/* OAuth2 Callback Handler */}
+                <Route path="/callback" element={<App />} />
+                
+                {/* Protected Routes */}
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/admin" element={<DashboardPage />} />
+                
+                {/* Main Weather Page */}
+                <Route path="/weather" element={<WeatherPage />} />
+                
+                {/* New Feature Routes - Tạm thời không cần login để test UI */}
+                <Route path="/favorites" element={<FavoritesPage />} />
+                <Route path="/alerts" element={<AlertsPage />} />
+                <Route path="/notes" element={<NotesPage />} />
+                
+                {/* Redirects */}
+                <Route path="/" element={<Navigate to="/weather" replace />} />
+                <Route path="*" element={<Navigate to="/weather" replace />} />
             </Route>
         </Routes>
     );
