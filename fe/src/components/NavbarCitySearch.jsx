@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { searchLocations } from '../services/locationService';
-import { MapPin, Search, X } from 'lucide-react';
+import { MapPin, Search, X, Clock, Calendar } from 'lucide-react';
 import { getCity } from '../utils/storage';
 
 export function NavbarCitySearch({ onCitySelect }) {
@@ -100,6 +101,30 @@ export function NavbarCitySearch({ onCitySelect }) {
                 <MapPin className="h-3.5 w-3.5 text-blue-400" />
                 <span className="font-medium text-slate-200">{ currentCity }</span>
             </div>
+
+            {/* Forecast Navigation Links */ }
+            <nav>
+                <ul className="flex items-center gap-2">
+                    <li>
+                        <Link
+                            to={ `/weather/hourly?city=${encodeURIComponent(currentCity)}` }
+                            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:border-blue-400 hover:bg-blue-500/20 hover:text-blue-100"
+                        >
+                            <Clock className="h-3.5 w-3.5" />
+                            <span>Hourly</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            to={ `/weather/daily?city=${encodeURIComponent(currentCity)}` }
+                            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:border-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-100"
+                        >
+                            <Calendar className="h-3.5 w-3.5" />
+                            <span>Daily</span>
+                        </Link>
+                    </li>
+                </ul>
+            </nav>
 
             {/* Search Input */ }
             <div ref={ searchRef } className="relative">

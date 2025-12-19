@@ -255,6 +255,12 @@ function buildForecastList(data: any, location: any, units: string) {
   };
 }
 
+export interface PaginationOptions {
+  page?: number;
+  limit?: number;
+  sortOrder?: 'asc' | 'desc';
+}
+
 export class WeatherService {
   async getCurrentWeather(city: string, units: string = "metric") {
     const location = await geocodeCity(city);
@@ -277,6 +283,193 @@ export class WeatherService {
       lon,
     };
     return normalizeCurrentWeather(data, location, units);
+  }
+
+  /**
+   * Get hourly forecast with pagination and sorting
+   */
+  async getHourlyForecast(city: string, units: string = "metric", options: PaginationOptions = {}) {
+    const { page = 1, limit = 24, sortOrder = 'asc' } = options;
+    
+    const location = await geocodeCity(city);
+    const data = await fetchOpenMeteoData(location.lat, location.lon, units);
+    
+    const hourly = data.hourly || {};
+    const times = hourly.time || [];
+    
+    // Build all hourly items
+    let allItems = times.map((time: string, index: number) => {
+      const temp = convertTemperature(hourly.temperature_2m?.[index], units);
+      const feelsLike = convertTemperature(hourly.apparent_temperature?.[index], units);
+      const humidity = hourly.relative_humidity_2m?.[index];
+      const pressureValue = hourly.surface_pressure?.[index] ?? hourly.pressure_msl?.[index] ?? 1013;
+      const windSpeed = hourly.wind_speed_10m?.[index] ?? 0;
+      const windDeg = hourly.wind_direction_10m?.[index] ?? 0;
+      const windGust = hourly.wind_gusts_10m?.[index] ?? null;
+      const precipitationProb = hourly.precipitation_probability?.[index];
+      const isDay = hourly.is_day?.[index] ?? 1;
+      const weather = mapWeatherCodeToCondition(hourly.weather_code?.[index], isDay);
+      const dt = isoToEpochSeconds(time) ?? Math.floor(Date.now() / 1000);
+
+      return {
+        dt,
+        dt_txt: time,
+        main: {
+          temp,
+          feels_like: feelsLike ?? temp,
+          temp_min: temp,
+          temp_max: temp,
+          pressure: Math.round(pressureValue),
+          humidity: humidity ?? 0,
+        },
+        weather: [weather],
+        clouds: { all: weather.id === 0 ? 0 : 60 },
+        wind: { speed: windSpeed, deg: windDeg, gust: windGust },
+        visibility: 10000,
+        pop: typeof precipitationProb === "number" ? precipitationProb / 100 : 0,
+        sys: { pod: isDay ? "d" : "n" },
+      };
+    });
+
+    // Sort by time
+    if (sortOrder === 'desc') {
+      allItems = allItems.sort((a: any, b: any) => b.dt - a.dt);
+    } else {
+      allItems = allItems.sort((a: any, b: any) => a.dt - b.dt);
+    }
+
+    // Pagination
+    const total = allItems.length;
+    const totalPages = Math.ceil(total / limit);
+    const startIndex = (page - 1) * limit;
+    const paginatedItems = allItems.slice(startIndex, startIndex + limit);
+
+    return {
+      cod: "200",
+      list: paginatedItems,
+      city: {
+        id: `${location.lat},${location.lon}`,
+        name: location.name,
+        coord: { lat: location.lat, lon: location.lon },
+        country: location.country ?? "VN",
+        timezone: data.utc_offset_seconds ?? 0,
+        sunrise: isoToEpochSeconds(data.daily?.sunrise?.[0]),
+        sunset: isoToEpochSeconds(data.daily?.sunset?.[0]),
+      },
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    };
+  }
+
+  /**
+   * Get daily forecast with pagination and sorting
+   * Aggregates hourly data into daily summaries
+   */
+  async getDailyForecast(city: string, units: string = "metric", options: PaginationOptions = {}) {
+    const { page = 1, limit = 7, sortOrder = 'asc' } = options;
+    
+    const location = await geocodeCity(city);
+    const data = await fetchOpenMeteoData(location.lat, location.lon, units);
+    
+    const hourly = data.hourly || {};
+    const times = hourly.time || [];
+    
+    // Group hourly data by date
+    const dailyMap: Record<string, any[]> = {};
+    
+    times.forEach((time: string, index: number) => {
+      const dateKey = time.split('T')[0] || ''; // Get YYYY-MM-DD
+      if (!dateKey) return; // Skip if no valid date
+      if (!dailyMap[dateKey]) {
+        dailyMap[dateKey] = [];
+      }
+      
+      dailyMap[dateKey].push({
+        time,
+        temp: hourly.temperature_2m?.[index],
+        feelsLike: hourly.apparent_temperature?.[index],
+        humidity: hourly.relative_humidity_2m?.[index],
+        pressure: hourly.surface_pressure?.[index] ?? hourly.pressure_msl?.[index],
+        windSpeed: hourly.wind_speed_10m?.[index],
+        windDeg: hourly.wind_direction_10m?.[index],
+        pop: hourly.precipitation_probability?.[index],
+        weatherCode: hourly.weather_code?.[index],
+        isDay: hourly.is_day?.[index],
+      });
+    });
+
+    // Aggregate into daily summaries
+    let dailyItems = Object.entries(dailyMap).map(([dateKey, hourlyItems]) => {
+      const temps = hourlyItems.map(h => h.temp).filter((t): t is number => typeof t === 'number');
+      const humidities = hourlyItems.map(h => h.humidity).filter((h): h is number => typeof h === 'number');
+      const pops = hourlyItems.map(h => h.pop).filter((p): p is number => typeof p === 'number');
+      const windSpeeds = hourlyItems.map(h => h.windSpeed).filter((w): w is number => typeof w === 'number');
+      
+      // Get most common weather code (mode)
+      const weatherCodes = hourlyItems.map(h => h.weatherCode).filter((c): c is number => typeof c === 'number');
+      const weatherCode: number = (weatherCodes.length > 0 ? weatherCodes[Math.floor(weatherCodes.length / 2)] : 0) ?? 0;
+      const weather = mapWeatherCodeToCondition(weatherCode, 1);
+      
+      const dt = isoToEpochSeconds(`${dateKey}T12:00:00`) ?? Math.floor(Date.now() / 1000);
+      
+      return {
+        dt,
+        dt_txt: dateKey,
+        main: {
+          temp: temps.length > 0 ? temps.reduce((a, b) => a + b, 0) / temps.length : 25,
+          temp_min: temps.length > 0 ? Math.min(...temps) : 20,
+          temp_max: temps.length > 0 ? Math.max(...temps) : 30,
+          feels_like: temps.length > 0 ? temps.reduce((a, b) => a + b, 0) / temps.length : 25,
+          humidity: humidities.length > 0 ? Math.round(humidities.reduce((a, b) => a + b, 0) / humidities.length) : 65,
+          pressure: hourlyItems[0]?.pressure ?? 1013,
+        },
+        weather: [weather],
+        clouds: { all: weather.id === 0 ? 0 : 60 },
+        wind: {
+          speed: windSpeeds.length > 0 ? windSpeeds.reduce((a, b) => a + b, 0) / windSpeeds.length : 3,
+          deg: hourlyItems[0]?.windDeg ?? 180,
+        },
+        pop: pops.length > 0 ? Math.max(...pops) / 100 : 0,
+        rain: pops.length > 0 && Math.max(...pops) > 50 ? Math.max(...pops) / 10 : 0,
+      };
+    });
+
+    // Sort by date
+    if (sortOrder === 'desc') {
+      dailyItems = dailyItems.sort((a, b) => b.dt - a.dt);
+    } else {
+      dailyItems = dailyItems.sort((a, b) => a.dt - b.dt);
+    }
+
+    // Pagination
+    const total = dailyItems.length;
+    const totalPages = Math.ceil(total / limit);
+    const startIndex = (page - 1) * limit;
+    const paginatedItems = dailyItems.slice(startIndex, startIndex + limit);
+
+    return {
+      cod: "200",
+      list: paginatedItems,
+      city: {
+        id: `${location.lat},${location.lon}`,
+        name: location.name,
+        coord: { lat: location.lat, lon: location.lon },
+        country: location.country ?? "VN",
+        timezone: data.utc_offset_seconds ?? 0,
+        sunrise: isoToEpochSeconds(data.daily?.sunrise?.[0]),
+        sunset: isoToEpochSeconds(data.daily?.sunset?.[0]),
+      },
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    };
   }
 }
 

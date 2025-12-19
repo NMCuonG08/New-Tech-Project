@@ -19,12 +19,12 @@ const app = express();
 // Session configuration - required for Passport
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "your-session-secret",
+    secret: process.env.SESSION_SECRET || "123",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      secure: process.env.NODE_ENV === "production", 
+      maxAge: 24 * 60 * 60 * 1000, 
     },
   })
 );
@@ -32,8 +32,8 @@ app.use(
 // CORS configuration - cho phép FE connect
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Vite default port
-    credentials: true, // Cho phép gửi cookies/auth headers
+    origin: process.env.FRONTEND_URL || "http://localhost:5173", 
+    credentials: true, 
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

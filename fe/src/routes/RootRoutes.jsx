@@ -7,6 +7,8 @@ import { OAuth2CallbackPage } from '../pages/Auth/OAuth2CallbackPage';
 import { ProfilePage } from '../pages/User/ProfilePage';
 import { DashboardPage } from '../pages/Admin/DashboardPage';
 import { WeatherPage } from '../pages/Weather/WeatherPage';
+import { HourlyForecastPage } from '../pages/Weather/HourlyForecastPage';
+import { DailyForecastPage } from '../pages/Weather/DailyForecastPage';
 import { NavbarCitySearch } from '../components/NavbarCitySearch';
 
 function ProtectedRoute({ children }) {
@@ -133,6 +135,8 @@ export function RootRoutes() {
                 <Route path="/admin" element={ <DashboardPage /> } />
 
                 <Route path="/weather" element={ <WeatherPage /> } />
+                <Route path="/weather/hourly" element={ <HourlyForecastPage /> } />
+                <Route path="/weather/daily" element={ <DailyForecastPage /> } />
                 <Route path="/" element={ <Navigate to="/weather" replace /> } />
                 <Route path="*" element={ <Navigate to="/weather" replace /> } />
             </Route>
