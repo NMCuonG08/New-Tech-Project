@@ -6,6 +6,7 @@ import { RegisterPage } from '../pages/Auth/RegisterPage';
 import { OAuth2CallbackPage } from '../pages/Auth/OAuth2CallbackPage';
 import { ProfilePage } from '../pages/User/ProfilePage';
 import { DashboardPage } from '../pages/Admin/DashboardPage';
+import { WeatherPage } from '../pages/Weather/WeatherPage';
 
 function ProtectedRoute({ children }) {
     const { isAuthenticated } = useAuth();
@@ -114,8 +115,9 @@ export function RootRoutes() {
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/admin" element={<DashboardPage />} />
                 
-                <Route path="/" element={<App />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="/weather" element={<WeatherPage />} />
+                <Route path="/" element={<Navigate to="/weather" replace />} />
+                <Route path="*" element={<Navigate to="/weather" replace />} />
             </Route>
         </Routes>
     );

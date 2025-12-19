@@ -15,11 +15,8 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "ES2020",
-    "types": [],
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
+    "types": ["node"],
+    "lib": ["ES2020"],
 
     // Decorators (cho TypeORM entity, controller, v.v.)
     "experimentalDecorators": true,

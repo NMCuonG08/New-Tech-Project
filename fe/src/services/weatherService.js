@@ -446,13 +446,15 @@ const reverseGeocode = async (lat, lon) => {
  */
 export async function getCurrentWeather(city = 'Hanoi', units = 'metric') {
     try {
-        const location = await geocodeCity(city);
-        const data = await fetchOpenMeteoData({
-            lat: location.lat,
-            lon: location.lon,
+        const { apiClient } = await import('../configs/apiClient');
+        const response = await apiClient.post('/weather/current', {
+            city,
             units,
         });
-        return normalizeCurrentWeather(data, location, units);
+        if (response.data.success && response.data.data) {
+            return response.data.data;
+        }
+        throw new Error(response.data.error || 'Failed to get weather');
     } catch (error) {
         console.error('Error fetching current weather:', error);
         // Fallback to mock data
@@ -470,13 +472,15 @@ export async function getCurrentWeather(city = 'Hanoi', units = 'metric') {
  */
 export async function getForecast(city = 'Hanoi', units = 'metric') {
     try {
-        const location = await geocodeCity(city);
-        const data = await fetchOpenMeteoData({
-            lat: location.lat,
-            lon: location.lon,
+        const { apiClient } = await import('../configs/apiClient');
+        const response = await apiClient.post('/weather/forecast', {
+            city,
             units,
         });
-        return buildForecastResponse(data, location, units);
+        if (response.data.success && response.data.data) {
+            return response.data.data;
+        }
+        throw new Error(response.data.error || 'Failed to get forecast');
     } catch (error) {
         console.error('Error fetching forecast:', error);
         // Fallback to mock data
@@ -494,10 +498,16 @@ export async function getForecast(city = 'Hanoi', units = 'metric') {
  */
 export async function getWeatherByCoords(lat, lon, units = 'metric') {
     try {
-        const location =
-            (await reverseGeocode(lat, lon)) || { name: 'Vị trí của bạn', country: 'VN', lat, lon };
-        const data = await fetchOpenMeteoData({ lat, lon, units });
-        return normalizeCurrentWeather(data, location, units);
+        const { apiClient } = await import('../configs/apiClient');
+        const response = await apiClient.post('/weather/coords', {
+            lat,
+            lon,
+            units,
+        });
+        if (response.data.success && response.data.data) {
+            return response.data.data;
+        }
+        throw new Error(response.data.error || 'Failed to get weather by coords');
     } catch (error) {
         console.error('Error fetching weather by coords:', error);
         await delay();
