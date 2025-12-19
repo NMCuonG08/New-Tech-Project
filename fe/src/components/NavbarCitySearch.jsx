@@ -68,8 +68,10 @@ export function NavbarCitySearch({ onCitySelect }) {
     }, [query]);
 
     const handleSelect = (location) => {
-        // Save to localStorage
-        localStorage.setItem('weather-city', location.name);
+        // Save city name using JSON.stringify (to match getStorage which uses JSON.parse)
+        const cityName = location.name;
+        localStorage.setItem('weather-city', JSON.stringify(cityName));
+        console.log('[NavbarCitySearch] Saved city:', cityName);
 
         // Clear input
         setQuery('');
@@ -77,7 +79,7 @@ export function NavbarCitySearch({ onCitySelect }) {
         setIsOpen(false);
 
         // Update current city display
-        setCurrentCity(location.name);
+        setCurrentCity(cityName);
 
         // Call parent handler
         if (onCitySelect) {

@@ -28,8 +28,8 @@ function RootLayout() {
     const isRegister = location.pathname === '/register';
 
     // Handle city selection from navbar
-    const handleCitySelect = (location) => {
-        if (location && location.name) {
+    const handleCitySelect = (selectedCity) => {
+        if (selectedCity && selectedCity.name) {
             // Save city to localStorage (done in NavbarCitySearch)
             // Reload page to update weather
             setTimeout(() => {

@@ -17,7 +17,12 @@ export function useWeather() {
     const [forecast, setForecast] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [city, setCityState] = useState(getCity());
+
+    const [city, setCityState] = useState(() => {
+        const savedCity = getCity();
+        console.log('[useWeather] Initializing city from localStorage:', savedCity);
+        return savedCity;
+    });
     const [units, setUnitsState] = useState(getUnits());
 
     // Load weather data
@@ -38,6 +43,7 @@ export function useWeather() {
                 }
 
                 // Fetch từ API
+                console.log('[useWeather] Calling API with city:', cityName, 'units:', unitsType);
                 const [currentData, forecastData] = await Promise.all([
                     getCurrentWeather(cityName, unitsType),
                     getForecast(cityName, unitsType),
@@ -102,8 +108,8 @@ export function useWeather() {
     const changeCity = useCallback(
         (newCity) => {
             setCityState(newCity);
-            // Save to localStorage
-            localStorage.setItem('weather-city', newCity);
+            // Save to localStorage using JSON.stringify (to match getStorage)
+            localStorage.setItem('weather-city', JSON.stringify(newCity));
             loadWeather(newCity, units, true);
         },
         [units, loadWeather]

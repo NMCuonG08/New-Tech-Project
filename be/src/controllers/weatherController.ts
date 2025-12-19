@@ -4,6 +4,7 @@ import { weatherService } from "../services/weatherService";
 export const getCurrentWeather = async (req: Request, res: Response) => {
   try {
     const { city, units } = req.body;
+    console.log('[Backend getCurrentWeather] Received city:', city, 'units:', units);
     if (!city) {
       return res.status(400).json({
         success: false,
@@ -29,6 +30,7 @@ export const getCurrentWeather = async (req: Request, res: Response) => {
 export const getForecast = async (req: Request, res: Response) => {
   try {
     const { city, units } = req.body;
+    console.log('[Backend getForecast] Received city:', city, 'units:', units);
     if (!city) {
       return res.status(400).json({
         success: false,

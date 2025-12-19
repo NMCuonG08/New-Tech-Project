@@ -42,21 +42,8 @@ export default defineConfig({
                 statuses: [0, 200]
               }
             }
-          },
-          {
-            urlPattern: /^https:\/\/api\.open-meteo\.com\/v1\/forecast.*/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'open-meteo-cache',
-              expiration: {
-                maxEntries: 20,
-                maxAgeSeconds: 60 * 30 // 30 minutes
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
           }
+
         ]
       },
       includeAssets: ['favicon.svg', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
