@@ -83,8 +83,8 @@ function RootLayout() {
                                         key={ item.to }
                                         to={ item.to }
                                         className={ `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all ${isActive
-                                                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50'
-                                                : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                                            ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50'
+                                            : 'text-slate-300 hover:bg-white/5 hover:text-white'
                                             }` }
                                     >
                                         { Icon ? <Icon className="w-4 h-4" /> : <span>{ item.icon }</span> }
@@ -161,8 +161,8 @@ function RootLayout() {
                                         key={ item.to }
                                         to={ item.to }
                                         className={ `flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-all ${isActive
-                                                ? 'text-blue-300'
-                                                : 'text-slate-400 hover:text-white'
+                                            ? 'text-blue-300'
+                                            : 'text-slate-400 hover:text-white'
                                             }` }
                                     >
                                         { Icon ? <Icon className="w-5 h-5" /> : <span className="text-lg">{ item.icon }</span> }
@@ -206,6 +206,10 @@ export function RootRoutes() {
                 <Route path="/favorites" element={ <FavoritesPage /> } />
                 <Route path="/alerts" element={ <AlertsPage /> } />
                 <Route path="/notes" element={ <NotesPage /> } />
+
+                {/* Weather Forecast Routes */ }
+                <Route path="/hourly" element={ <HourlyForecastPage /> } />
+                <Route path="/daily" element={ <DailyForecastPage /> } />
 
                 {/* Redirects */ }
                 <Route path="/" element={ <Navigate to="/weather" replace /> } />

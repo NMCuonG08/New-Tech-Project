@@ -107,7 +107,7 @@ export function NavbarCitySearch({ onCitySelect }) {
                 <ul className="flex items-center gap-2">
                     <li>
                         <Link
-                            to={ `/weather/hourly?city=${encodeURIComponent(currentCity)}` }
+                            to={ `/hourly?city=${encodeURIComponent(currentCity)}` }
                             className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:border-blue-400 hover:bg-blue-500/20 hover:text-blue-100"
                         >
                             <Clock className="h-3.5 w-3.5" />
@@ -116,7 +116,7 @@ export function NavbarCitySearch({ onCitySelect }) {
                     </li>
                     <li>
                         <Link
-                            to={ `/weather/daily?city=${encodeURIComponent(currentCity)}` }
+                            to={ `/daily?city=${encodeURIComponent(currentCity)}` }
                             className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:border-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-100"
                         >
                             <Calendar className="h-3.5 w-3.5" />
