@@ -192,14 +192,6 @@ export function WeatherPage() {
     window.location.reload();
   };
 
-  // Handle city change
-  const handleCityChange = (e) => {
-    const newCity = e.target.value;
-    if (newCity) {
-      changeCity(newCity);
-    }
-  };
-
   // Handle units change
   const handleUnitsChange = (e) => {
     changeUnits(e.target.value);
@@ -211,42 +203,42 @@ export function WeatherPage() {
       <div className="absolute -top-40 -right-24 h-96 w-96 rounded-full bg-purple-500/30 blur-[120px]" />
       <div className="absolute -bottom-40 -left-24 h-80 w-80 rounded-full bg-blue-500/30 blur-[100px]" />
 
-      <OfflineBanner isOffline={isOffline} wasOffline={wasOffline} />
-      {showUpdate && <UpdatePrompt onUpdate={handleUpdate} />}
+      <OfflineBanner isOffline={ isOffline } wasOffline={ wasOffline } />
+      { showUpdate && <UpdatePrompt onUpdate={ handleUpdate } /> }
 
       <main className="relative z-10 mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 lg:px-6">
         <header className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-4">
+          <div className="space-y-4 flex-1">
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
                 Weather overview
               </p>
               <h1 className="text-4xl font-semibold md:text-5xl">
-                {locationName}
+                { locationName }
               </h1>
             </div>
             <div className="flex flex-wrap gap-3 text-sm text-slate-300">
               <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 backdrop-blur">
                 <MapPin className="h-4 w-4" />
-                <span className="capitalize">{locationName}</span>
+                <span className="capitalize">{ locationName }</span>
               </span>
               <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 backdrop-blur">
                 <CalendarDays className="h-4 w-4" />
-                <span className="capitalize">{formattedDate}</span>
+                <span className="capitalize">{ formattedDate }</span>
               </span>
               <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 backdrop-blur">
                 <Clock className="h-4 w-4" />
-                <span>{formattedTime}</span>
+                <span>{ formattedTime }</span>
               </span>
-              {weatherSummary && (
+              { weatherSummary && (
                 <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 backdrop-blur">
                   <CloudSun className="h-4 w-4" />
-                  <span className="capitalize">{weatherSummary}</span>
+                  <span className="capitalize">{ weatherSummary }</span>
                 </span>
-              )}
+              ) }
               <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 backdrop-blur">
                 <RefreshCw className="h-4 w-4" />
-                <span>Cập nhật: {lastUpdated}</span>
+                <span>Cập nhật: { lastUpdated }</span>
               </span>
             </div>
             <p className="text-sm text-slate-400">
@@ -260,24 +252,6 @@ export function WeatherPage() {
               Tùy chỉnh nhanh
             </h2>
             <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="city" className="block text-xs uppercase tracking-wide text-slate-400">
-                  Thành phố
-                </label>
-                <select
-                  id="city"
-                  value={city}
-                  onChange={handleCityChange}
-                  className="w-full rounded-2xl border border-white/15 bg-slate-900/60 px-4 py-3 text-sm font-medium text-slate-100 backdrop-blur focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  style={{ colorScheme: 'dark' }}
-                >
-                  <option value="Hanoi">Hà Nội</option>
-                  <option value="Ho Chi Minh City">Hồ Chí Minh</option>
-                  <option value="Da Nang">Đà Nẵng</option>
-                  <option value="Hai Phong">Hải Phòng</option>
-                  <option value="Can Tho">Cần Thơ</option>
-                </select>
-              </div>
 
               <div className="space-y-2">
                 <label htmlFor="units" className="block text-xs uppercase tracking-wide text-slate-400">
@@ -285,10 +259,10 @@ export function WeatherPage() {
                 </label>
                 <select
                   id="units"
-                  value={units}
-                  onChange={handleUnitsChange}
+                  value={ units }
+                  onChange={ handleUnitsChange }
                   className="w-full rounded-2xl border border-white/15 bg-slate-900/60 px-4 py-3 text-sm font-medium text-slate-100 backdrop-blur focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  style={{ colorScheme: 'dark' }}
+                  style={ { colorScheme: 'dark' } }
                 >
                   <option value="metric">°C (Metric)</option>
                   <option value="imperial">°F (Imperial)</option>
@@ -297,35 +271,35 @@ export function WeatherPage() {
               </div>
 
               <button
-                onClick={handleRefreshClick}
-                disabled={loading}
+                onClick={ handleRefreshClick }
+                disabled={ loading }
                 aria-label="Refresh weather"
                 className="flex items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-blue-500 to-indigo-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+                <RefreshCw className={ `h-4 w-4 ${loading ? 'animate-spin' : ''}` } />
+                <span>{ loading ? 'Đang tải...' : 'Làm mới dữ liệu' }</span>
               </button>
-              {syncStatus === 'queued' && (
+              { syncStatus === 'queued' && (
                 <p className="text-xs text-amber-200">
                   Đang offline: Background Sync đã được đăng ký, dữ liệu sẽ tự làm mới khi online.
                 </p>
-              )}
-              {syncStatus === 'completed' && (
+              ) }
+              { syncStatus === 'completed' && (
                 <p className="text-xs text-emerald-200">
                   Background Sync đã chạy · đang cập nhật dữ liệu mới nhất.
                 </p>
-              )}
+              ) }
             </div>
           </div>
         </header>
 
         <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
           <WeatherCard
-            weather={weather}
-            loading={loading}
-            error={error}
-            onRefresh={handleRefreshClick}
-            units={units}
+            weather={ weather }
+            loading={ loading }
+            error={ error }
+            onRefresh={ handleRefreshClick }
+            units={ units }
           />
 
           <div className="flex flex-col gap-6">
@@ -338,48 +312,48 @@ export function WeatherPage() {
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-wide text-slate-300">
                     Live
                   </span>
-                  {user && (
+                  { user && (
                     <div className="inline-flex items-center gap-2 rounded-full bg-slate-900/60 px-3 py-1 text-xs text-slate-200">
-                      <span className="font-medium">Hi, {user.username}</span>
+                      <span className="font-medium">Hi, { user.username }</span>
                       <button
                         type="button"
-                        onClick={logout}
+                        onClick={ logout }
                         className="rounded-full border border-white/20 px-2 py-0.5 text-[11px] text-slate-300 hover:border-white/40 hover:text-white"
                       >
                         Đăng xuất
                       </button>
                     </div>
-                  )}
+                  ) }
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {statusItems.map((item) => {
+                { statusItems.map((item) => {
                   const Icon = item.icon;
                   return (
                     <div
-                      key={item.label}
+                      key={ item.label }
                       className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3"
                     >
-                      <span className={`flex h-11 w-11 items-center justify-center rounded-2xl ${item.badgeClass}`}>
+                      <span className={ `flex h-11 w-11 items-center justify-center rounded-2xl ${item.badgeClass}` }>
                         <Icon className="h-5 w-5" />
                       </span>
                       <div>
                         <p className="text-xs uppercase tracking-wide text-slate-400">
-                          {item.label}
+                          { item.label }
                         </p>
                         <p className="text-sm font-semibold text-slate-100">
-                          {item.value}
+                          { item.value }
                         </p>
                       </div>
                     </div>
                   );
-                })}
+                }) }
               </div>
             </div>
 
             <NotificationSettings
-              permission={notificationPermission}
-              onSendPush={(payload) =>
+              permission={ notificationPermission }
+              onSendPush={ (payload) =>
                 sendServerTestPush(payload).catch((error) => {
                   console.error(error)
                   alert('Không gửi được push notification, kiểm tra server backend.')
@@ -390,11 +364,11 @@ export function WeatherPage() {
             <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
               <div className="mb-4 flex items-center justify-between text-sm text-slate-300">
                 <p>
-                  Truy cập lần cuối: {lastUpdated} — trình duyệt {navigator.userAgentData?.brands?.[0]?.brand || navigator.userAgent || ''}
+                  Truy cập lần cuối: { lastUpdated } — trình duyệt { navigator.userAgentData?.brands?.[0]?.brand || navigator.userAgent || '' }
                 </p>
                 <button
                   type="button"
-                  onClick={handleInstall}
+                  onClick={ handleInstall }
                   className="hidden rounded-xl border border-white/20 px-3 py-1 text-xs text-white/80 hover:border-white/40 hover:text-white md:inline-flex"
                 >
                   Tự cài đặt
@@ -404,15 +378,15 @@ export function WeatherPage() {
           </div>
         </section>
 
-        <ForecastCard forecast={forecast} loading={loading} units={units} />
+        <ForecastCard forecast={ forecast } loading={ loading } units={ units } />
 
         <footer className="border-t border-white/10 py-6 text-center text-sm text-slate-400">
           <p className="mb-2">
-            {isOffline ? '📴 Đang offline' : '🌐 Đang online'}
-            {isInstalled ? ' · 📱 Đã cài đặt' : ''}
+            { isOffline ? '📴 Đang offline' : '🌐 Đang online' }
+            { isInstalled ? ' · 📱 Đã cài đặt' : '' }
           </p>
           <p>
-            Dữ liệu bởi{' '}
+            Dữ liệu bởi{ ' ' }
             <a
               href="https://open-meteo.com"
               target="_blank"
@@ -425,7 +399,7 @@ export function WeatherPage() {
         </footer>
       </main>
 
-      {/* Chat Overlay */}
+      {/* Chat Overlay */ }
       <ChatOverlay />
     </div>
   );

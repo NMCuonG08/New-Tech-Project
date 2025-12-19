@@ -102,6 +102,8 @@ export function useWeather() {
     const changeCity = useCallback(
         (newCity) => {
             setCityState(newCity);
+            // Save to localStorage
+            localStorage.setItem('weather-city', newCity);
             loadWeather(newCity, units, true);
         },
         [units, loadWeather]
