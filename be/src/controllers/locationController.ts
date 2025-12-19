@@ -1,9 +1,23 @@
 import { Request, Response } from "express";
 import { locationService } from "../services/locationService";
+import { uploadBase64Image, uploadMultipleImages, deleteImage } from "../utils/cloudinaryService";
 
 export const createLocation = async (req: Request, res: Response) => {
   try {
-    const location = await locationService.create(req.body);
+    const { images: base64Images, ...locationData } = req.body;
+    
+    // Upload images if provided
+    let imageUrls: string[] = [];
+    if (base64Images && Array.isArray(base64Images) && base64Images.length > 0) {
+      const uploadResults = await uploadMultipleImages(base64Images, "locations");
+      imageUrls = uploadResults.map((r) => r.url);
+    }
+    
+    const location = await locationService.create({
+      ...locationData,
+      images: imageUrls.length > 0 ? imageUrls : undefined,
+    });
+    
     res.status(201).json({
       success: true,
       data: location,
@@ -21,10 +35,24 @@ export const createLocation = async (req: Request, res: Response) => {
 
 export const getAllLocations = async (req: Request, res: Response) => {
   try {
-    const locations = await locationService.findAll();
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    
+    // If no pagination params, return all
+    if (!req.query.page && !req.query.limit) {
+      const locations = await locationService.findAll();
+      return res.json({
+        success: true,
+        data: locations,
+      });
+    }
+    
+    // Return paginated results
+    const result = await locationService.findAllPaginated(page, limit);
     res.json({
       success: true,
-      data: locations,
+      data: result.data,
+      pagination: result.pagination,
     });
   } catch (error) {
     console.error("Get all locations error:", error);
@@ -91,7 +119,18 @@ export const updateLocation = async (req: Request, res: Response) => {
         error: "Invalid location ID",
       });
     }
-    const location = await locationService.update(id, req.body);
+    
+    const { images: base64Images, ...locationData } = req.body;
+    
+    // Upload new images if provided
+    let updateData = { ...locationData };
+    if (base64Images && Array.isArray(base64Images) && base64Images.length > 0) {
+      const uploadResults = await uploadMultipleImages(base64Images, "locations");
+      const imageUrls = uploadResults.map((r) => r.url);
+      updateData.images = imageUrls;
+    }
+    
+    const location = await locationService.update(id, updateData);
     if (!location) {
       return res.status(404).json({
         success: false,

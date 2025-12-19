@@ -46,3 +46,33 @@ export async function getAllLocations() {
     return [];
   }
 }
+
+/**
+ * Get location by name (search and return first match)
+ * @param {string} name - Location name
+ * @returns {Promise<Object|null>} - Location object with images or null
+ */
+export async function getLocationByName(name) {
+  try {
+    if (!name || name.trim().length === 0) {
+      return null;
+    }
+
+    const response = await apiClient.get('/locations/search', {
+      params: { q: name.trim() }
+    });
+
+    if (response.data.success && response.data.data && response.data.data.length > 0) {
+      // Return exact match or first result
+      const exactMatch = response.data.data.find(
+        loc => loc.name.toLowerCase() === name.toLowerCase()
+      );
+      return exactMatch || response.data.data[0];
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error getting location by name:', error);
+    return null;
+  }
+}

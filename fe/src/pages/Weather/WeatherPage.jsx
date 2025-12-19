@@ -11,6 +11,7 @@ import { UpdatePrompt } from '../../components/UpdatePrompt';
 import { ChatOverlay } from '../../components/ChatOverlay';
 import { registerSW } from 'virtual:pwa-register';
 import { initDB } from '../../services/dbService';
+import { getLocationByName } from '../../services/locationService';
 import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 import {
@@ -53,6 +54,11 @@ export function WeatherPage() {
   const { isInstallable, isInstalled, install } = useInstallPrompt();
   const [showUpdate, setShowUpdate] = useState(false);
   const [syncStatus, setSyncStatus] = useState('idle'); // idle | queued | completed
+
+  // Background images state
+  const [backgroundImages, setBackgroundImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const now = new Date();
   const formattedDate = now.toLocaleDateString('vi-VN', {
@@ -119,6 +125,41 @@ export function WeatherPage() {
         : 'bg-purple-500/20 text-purple-200',
     },
   ];
+
+  // Fetch location images when city changes
+  useEffect(() => {
+    const fetchLocationImages = async () => {
+      if (!locationName) return;
+
+      try {
+        const location = await getLocationByName(locationName);
+        if (location && location.images && Array.isArray(location.images) && location.images.length > 0) {
+          setBackgroundImages(location.images);
+          setCurrentImageIndex(0);
+          setImageLoaded(false);
+        } else {
+          setBackgroundImages([]);
+        }
+      } catch (err) {
+        console.error('Error fetching location images:', err);
+        setBackgroundImages([]);
+      }
+    };
+
+    fetchLocationImages();
+  }, [locationName]);
+
+  // Auto-rotate background images every 10 seconds
+  useEffect(() => {
+    if (backgroundImages.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % backgroundImages.length);
+      setImageLoaded(false);
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(interval);
+  }, [backgroundImages.length]);
 
   // Initialize IndexedDB
   useEffect(() => {
@@ -197,11 +238,41 @@ export function WeatherPage() {
     changeUnits(e.target.value);
   };
 
+  const hasBackgroundImage = backgroundImages.length > 0;
+  const currentBgImage = hasBackgroundImage ? backgroundImages[currentImageIndex] : null;
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.35),transparent_55%)]" />
-      <div className="absolute -top-40 -right-24 h-96 w-96 rounded-full bg-purple-500/30 blur-[120px]" />
-      <div className="absolute -bottom-40 -left-24 h-80 w-80 rounded-full bg-blue-500/30 blur-[100px]" />
+    <div className="relative min-h-screen overflow-hidden text-slate-100">
+      {/* Background Layer */ }
+      { hasBackgroundImage ? (
+        <>
+          {/* Fullscreen Background Image */ }
+          <div
+            className="fixed inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+            style={ {
+              backgroundImage: `url(${currentBgImage})`,
+              opacity: imageLoaded ? 1 : 0,
+            } }
+          />
+          {/* Preload next image */ }
+          <img
+            src={ currentBgImage }
+            alt=""
+            className="hidden"
+            onLoad={ () => setImageLoaded(true) }
+          />
+          {/* Dark overlay for better readability */ }
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px]" />
+        </>
+      ) : (
+        <>
+          {/* Default gradient background */ }
+          <div className="fixed inset-0 bg-slate-950" />
+          <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.35),transparent_55%)]" />
+          <div className="fixed -top-40 -right-24 h-96 w-96 rounded-full bg-purple-500/30 blur-[120px]" />
+          <div className="fixed -bottom-40 -left-24 h-80 w-80 rounded-full bg-blue-500/30 blur-[100px]" />
+        </>
+      ) }
 
       <OfflineBanner isOffline={ isOffline } wasOffline={ wasOffline } />
       { showUpdate && <UpdatePrompt onUpdate={ handleUpdate } /> }
@@ -210,44 +281,62 @@ export function WeatherPage() {
         <header className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4 flex-1">
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
                 Weather overview
               </p>
-              <h1 className="text-4xl font-semibold md:text-5xl">
+              <h1 className="text-4xl font-semibold md:text-5xl drop-shadow-lg">
                 { locationName }
               </h1>
             </div>
-            <div className="flex flex-wrap gap-3 text-sm text-slate-300">
-              <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 backdrop-blur">
+            <div className="flex flex-wrap gap-3 text-sm text-slate-200">
+              <span className="flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 backdrop-blur-md border border-white/10">
                 <MapPin className="h-4 w-4" />
                 <span className="capitalize">{ locationName }</span>
               </span>
-              <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 backdrop-blur">
+              <span className="flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 backdrop-blur-md border border-white/10">
                 <CalendarDays className="h-4 w-4" />
                 <span className="capitalize">{ formattedDate }</span>
               </span>
-              <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 backdrop-blur">
+              <span className="flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 backdrop-blur-md border border-white/10">
                 <Clock className="h-4 w-4" />
                 <span>{ formattedTime }</span>
               </span>
               { weatherSummary && (
-                <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 backdrop-blur">
+                <span className="flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 backdrop-blur-md border border-white/10">
                   <CloudSun className="h-4 w-4" />
                   <span className="capitalize">{ weatherSummary }</span>
                 </span>
               ) }
-              <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 backdrop-blur">
+              <span className="flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 backdrop-blur-md border border-white/10">
                 <RefreshCw className="h-4 w-4" />
                 <span>Cập nhật: { lastUpdated }</span>
               </span>
             </div>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-slate-300/80">
               Theo dõi thời tiết theo thời gian thực, hoạt động cả khi offline và có
               thông báo thông minh.
             </p>
+            {/* Image indicator */ }
+            { hasBackgroundImage && backgroundImages.length > 1 && (
+              <div className="flex items-center gap-2">
+                { backgroundImages.map((_, idx) => (
+                  <button
+                    key={ idx }
+                    onClick={ () => {
+                      setCurrentImageIndex(idx);
+                      setImageLoaded(false);
+                    } }
+                    className={ `w-2 h-2 rounded-full transition-all ${idx === currentImageIndex
+                      ? 'bg-white w-4'
+                      : 'bg-white/40 hover:bg-white/60'
+                      }` }
+                  />
+                )) }
+              </div>
+            ) }
           </div>
 
-          <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur lg:w-[380px]">
+          <div className="w-full max-w-xl rounded-3xl border border-white/20 bg-slate-900/70 p-5 shadow-2xl backdrop-blur-xl lg:w-[380px]">
             <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">
               Tùy chỉnh nhanh
             </h2>
@@ -261,7 +350,7 @@ export function WeatherPage() {
                   id="units"
                   value={ units }
                   onChange={ handleUnitsChange }
-                  className="w-full rounded-2xl border border-white/15 bg-slate-900/60 px-4 py-3 text-sm font-medium text-slate-100 backdrop-blur focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full rounded-2xl border border-white/15 bg-slate-800/80 px-4 py-3 text-sm font-medium text-slate-100 backdrop-blur focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   style={ { colorScheme: 'dark' } }
                 >
                   <option value="metric">°C (Metric)</option>
@@ -274,7 +363,7 @@ export function WeatherPage() {
                 onClick={ handleRefreshClick }
                 disabled={ loading }
                 aria-label="Refresh weather"
-                className="flex items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-blue-500 to-indigo-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <RefreshCw className={ `h-4 w-4 ${loading ? 'animate-spin' : ''}` } />
                 <span>{ loading ? 'Đang tải...' : 'Làm mới dữ liệu' }</span>
@@ -303,17 +392,17 @@ export function WeatherPage() {
           />
 
           <div className="flex flex-col gap-6">
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
+            <div className="rounded-3xl border border-white/20 bg-slate-900/70 p-6 shadow-2xl backdrop-blur-xl">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-base font-semibold text-slate-100">
                   Trạng thái hệ thống
                 </h3>
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-wide text-slate-300">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-3 py-1 text-xs uppercase tracking-wide text-emerald-300 border border-emerald-500/30">
                     Live
                   </span>
                   { user && (
-                    <div className="inline-flex items-center gap-2 rounded-full bg-slate-900/60 px-3 py-1 text-xs text-slate-200">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-slate-800/80 px-3 py-1 text-xs text-slate-200">
                       <span className="font-medium">Hi, { user.username }</span>
                       <button
                         type="button"
@@ -332,7 +421,7 @@ export function WeatherPage() {
                   return (
                     <div
                       key={ item.label }
-                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3"
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-800/50 p-3"
                     >
                       <span className={ `flex h-11 w-11 items-center justify-center rounded-2xl ${item.badgeClass}` }>
                         <Icon className="h-5 w-5" />
@@ -361,7 +450,7 @@ export function WeatherPage() {
               }
             />
 
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
+            <div className="rounded-3xl border border-white/20 bg-slate-900/70 p-6 shadow-2xl backdrop-blur-xl">
               <div className="mb-4 flex items-center justify-between text-sm text-slate-300">
                 <p>
                   Truy cập lần cuối: { lastUpdated } — trình duyệt { navigator.userAgentData?.brands?.[0]?.brand || navigator.userAgent || '' }
@@ -404,4 +493,3 @@ export function WeatherPage() {
     </div>
   );
 }
-

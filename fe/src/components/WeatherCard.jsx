@@ -29,9 +29,9 @@ export function WeatherCard({ weather, loading, error, onRefresh, units = 'metri
     if (error && !weather) {
         return (
             <div className="rounded-3xl border border-red-500/40 bg-red-500/10 p-8 text-center text-red-50 backdrop-blur">
-                <p className="mb-4 text-lg font-semibold">❌ {error}</p>
+                <p className="mb-4 text-lg font-semibold">❌ { error }</p>
                 <button
-                    onClick={onRefresh}
+                    onClick={ onRefresh }
                     className="rounded-2xl bg-red-500/80 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-red-500 hover:shadow-xl"
                 >
                     Thử lại
@@ -133,19 +133,20 @@ export function WeatherCard({ weather, loading, error, onRefresh, units = 'metri
     ];
 
     return (
-        <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
+        <div className="relative overflow-hidden rounded-[32px] border border-white/20 bg-gradient-to-br from-slate-900/80 to-slate-800/60 p-8 shadow-2xl backdrop-blur-xl">
             <div className="pointer-events-none absolute -top-20 -right-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
             <div className="relative z-10 space-y-8">
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-300">
-                            Thời gian địa phương · {localTime}
+                        <p className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500/30 to-cyan-500/30 px-4 py-1.5 text-xs uppercase tracking-[0.3em] text-cyan-200 border border-cyan-400/30">
+                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                            Thời gian địa phương · { localTime }
                         </p>
                         <h2 className="mt-2 text-4xl font-semibold text-white md:text-5xl">
-                            {name}
+                            { name }
                         </h2>
                         <p className="mt-2 text-lg capitalize text-slate-200">
-                            {description}
+                            { description }
                         </p>
                     </div>
                 </div>
@@ -153,55 +154,56 @@ export function WeatherCard({ weather, loading, error, onRefresh, units = 'metri
                 <div className="grid gap-6 md:grid-cols-[minmax(0,220px)_1fr] md:items-center">
                     <div className="flex flex-col items-center gap-3">
                         <img
-                            src={iconUrl}
-                            alt={description}
+                            src={ iconUrl }
+                            alt={ description }
                             className="w-36 drop-shadow-[0_25px_45px_rgba(0,0,0,0.35)]"
                         />
                         <div className="text-center">
                             <div className="text-6xl font-light text-white md:text-7xl">
-                                {temp}
-                                <span className="ml-1 text-3xl text-slate-200">{unitSymbol}</span>
+                                { temp }
+                                <span className="ml-1 text-3xl text-slate-200">{ unitSymbol }</span>
                             </div>
                             <p className="mt-2 text-sm text-slate-200">
-                                Cảm giác như <span className="font-semibold text-white">{feelsLike}{unitSymbol}</span>
+                                Cảm giác như <span className="font-semibold text-white">{ feelsLike }{ unitSymbol }</span>
                             </p>
                         </div>
                     </div>
 
                     <div className="space-y-6">
                         <div className="grid gap-4 sm:grid-cols-2">
-                            {highlightCards.map(({ label, value, Icon, extra }) => (
+                            { highlightCards.map(({ label, value, Icon, extra }) => (
                                 <div
-                                    key={label}
-                                    className="rounded-3xl border border-white/10 bg-white/5 p-4 text-slate-100 shadow-lg"
+                                    key={ label }
+                                    className="rounded-3xl border border-white/15 bg-gradient-to-br from-slate-800/90 to-slate-900/70 p-4 text-slate-100 shadow-lg backdrop-blur-md hover:border-blue-400/30 transition-all duration-300"
                                 >
                                     <div className="flex items-center gap-3 text-sm text-slate-300">
                                         <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
                                             <Icon className="h-5 w-5" />
                                         </span>
-                                        <span className="uppercase tracking-wide">{label}</span>
+                                        <span className="uppercase tracking-wide">{ label }</span>
                                     </div>
                                     <p className="mt-3 text-2xl font-semibold text-white">
-                                        {value}
+                                        { value }
                                     </p>
-                                    {extra && (
-                                        <p className="mt-1 text-sm text-slate-300">{extra}</p>
-                                    )}
+                                    { extra && (
+                                        <p className="mt-1 text-sm text-slate-300">{ extra }</p>
+                                    ) }
                                 </div>
-                            ))}
+                            )) }
                         </div>
 
-                        <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                        <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-5 backdrop-blur-md">
                             <div className="mb-4 flex items-center justify-between">
-                                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+                                <h3 className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-amber-200">
+                                    <span className="w-2 h-2 rounded-full bg-amber-400"></span>
                                     Chu kỳ mặt trời
                                 </h3>
                                 <span className="text-xs text-slate-400">Theo giờ địa phương</span>
                             </div>
                             <div className="grid gap-4 sm:grid-cols-2">
-                                {sunTimeline.map(({ label, value, Icon }) => (
+                                { sunTimeline.map(({ label, value, Icon }) => (
                                     <div
-                                        key={label}
+                                        key={ label }
                                         className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
                                     >
                                         <div className="flex items-center gap-3">
@@ -210,15 +212,15 @@ export function WeatherCard({ weather, loading, error, onRefresh, units = 'metri
                                             </span>
                                             <div>
                                                 <p className="text-xs uppercase tracking-wide text-slate-300">
-                                                    {label}
+                                                    { label }
                                                 </p>
                                                 <p className="text-lg font-semibold text-white">
-                                                    {value}
+                                                    { value }
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                )) }
                             </div>
                         </div>
                     </div>

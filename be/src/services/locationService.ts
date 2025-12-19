@@ -14,6 +14,29 @@ export class LocationService {
     });
   }
 
+  async findAllPaginated(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ data: Location[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+    const skip = (page - 1) * limit;
+    
+    const [data, total] = await locationRepository.findAndCount({
+      order: { name: "ASC" },
+      skip,
+      take: limit,
+    });
+    
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
   async findById(id: number): Promise<Location | null> {
     return await locationRepository.findOne({ where: { id } });
   }

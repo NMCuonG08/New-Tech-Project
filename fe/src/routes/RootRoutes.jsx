@@ -6,6 +6,7 @@ import { RegisterPage } from '../pages/Auth/RegisterPage';
 import { OAuth2CallbackPage } from '../pages/Auth/OAuth2CallbackPage';
 import { ProfilePage } from '../pages/User/ProfilePage';
 import { DashboardPage } from '../pages/Admin/DashboardPage';
+import { CityManagementPage } from '../pages/Admin/CityManagementPage';
 import { FavoritesPage } from '../pages/User/FavoritesPage';
 import { AlertsPage } from '../pages/User/AlertsPage';
 import { NotesPage } from '../pages/User/NotesPage';
@@ -198,6 +199,7 @@ export function RootRoutes() {
                 {/* Protected Routes */ }
                 <Route path="/profile" element={ <ProfilePage /> } />
                 <Route path="/admin" element={ <DashboardPage /> } />
+                <Route path="/admin/cities" element={ <CityManagementPage /> } />
 
                 {/* Main Weather Page */ }
                 <Route path="/weather" element={ <WeatherPage /> } />

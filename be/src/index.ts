@@ -39,7 +39,9 @@ app.use(
   })
 );
 
-app.use(express.json());
+// Tăng limit body size để upload ảnh chất lượng cao
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 

@@ -12,11 +12,6 @@ export class Location {
   @Column({ type: "varchar", length: 100, nullable: true })
   province?: string;
 
-  @Column({ type: "decimal", precision: 10, scale: 7 })
-  latitude!: number;
-
-  @Column({ type: "decimal", precision: 10, scale: 7 })
-  longitude!: number;
 
   @Column({ type: "varchar", length: 100, nullable: true })
   timezone?: string;
