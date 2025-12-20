@@ -54,21 +54,6 @@ services:
     networks:
       - weather-network
 
-  # ==================== FRONTEND ====================
-  frontend:
-    build:
-      context: ../fe
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:3000/api}
-    container_name: weather-frontend
-    restart: unless-stopped
-    ports:
-      - "5173:80"
-    depends_on:
-      - backend
-    networks:
-      - weather-network
 
   # ==================== AI SERVICE ====================
   ai:
