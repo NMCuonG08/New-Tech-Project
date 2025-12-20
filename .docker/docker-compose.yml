@@ -47,6 +47,7 @@ services:
       - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
       - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
       - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
       - OPEN_METEO_BASE_URL=https://api.open-meteo.com/v1
       - OPEN_METEO_ARCHIVE_URL=https://archive-api.open-meteo.com/v1
     depends_on:
