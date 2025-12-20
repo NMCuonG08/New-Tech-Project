@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Base URL lấy từ env Vite
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+// Base URL mặc định là /api để tận dụng Vercel Rewrites
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
