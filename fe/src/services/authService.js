@@ -15,19 +15,31 @@ export async function registerRequest({ username, password }) {
 // OAuth2 callback handler
 export async function handleOAuth2Callback(provider, code) {
     const response = await apiClient.get(`/auth/${provider}/callback?code=${code}`);
-    return response.data; // { user: { id, username, email }, token: "jwt_token" }
+    return response.data; // { user: { id, username, email, role }, token: "jwt_token" }
+}
+
+// Get current user info from backend
+export async function getCurrentUser() {
+    const response = await apiClient.get('/auth/me');
+    return response.data; // { id, username, email, role }
 }
 
 // Lưu user và token vào localStorage
 export function saveAuthUser(data) {
-    // Nếu backend trả về { user, token }, lưu riêng
-    if (data.user && data.token !== undefined) {
+    // Handle flat response: { id, username, email, role, token }
+    if (data.token && data.id) {
+        const { token, ...userData } = data;
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+        localStorage.setItem('auth_token', token);
+    }
+    // Handle nested response: { user, token }
+    else if (data.user && data.token !== undefined) {
         localStorage.setItem('auth_user', JSON.stringify(data.user));
         if (data.token) {
             localStorage.setItem('auth_token', data.token);
         }
     } else {
-        // Tương thích với backend cũ (chỉ trả về user)
+        // Fallback: save as-is
         localStorage.setItem('auth_user', JSON.stringify(data));
     }
 }

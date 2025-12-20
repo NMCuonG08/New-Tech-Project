@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import alertsService from '../services/alertsService';
 
 export const useAlertsStore = create(
   persist(
@@ -14,31 +15,99 @@ export const useAlertsStore = create(
       isLoading: false,
       error: null,
 
+      // ========== Fetch from Backend ==========
+      
+      // Fetch all alert rules
+      fetchAlerts: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const data = await alertsService.getAlerts();
+          set({ rules: data, isLoading: false });
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to fetch alerts',
+            isLoading: false 
+          });
+        }
+      },
+
+      // Fetch active alerts by location
+      fetchAlertsByLocation: async (locationId) => {
+        set({ isLoading: true, error: null });
+        try {
+          const data = await alertsService.getActiveAlertsByLocation(locationId);
+          return data;
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to fetch location alerts',
+            isLoading: false 
+          });
+          return [];
+        }
+      },
+
       // ========== Alert Rules ==========
       
       // Add rule
-      addRule: (rule) => set((state) => ({
-        rules: [...state.rules, { ...rule, id: Date.now(), isActive: true }]
-      })),
+      addRule: async (rule) => {
+        set({ isLoading: true, error: null });
+        try {
+          const newRule = await alertsService.createAlert(rule);
+          set((state) => ({
+            rules: [...state.rules, newRule],
+            isLoading: false
+          }));
+          return newRule;
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to create alert',
+            isLoading: false 
+          });
+          return null;
+        }
+      },
 
       // Remove rule
-      removeRule: (id) => set((state) => ({
-        rules: state.rules.filter(r => r.id !== id)
-      })),
+      removeRule: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+          await alertsService.deleteAlert(id);
+          set((state) => ({
+            rules: state.rules.filter(r => r.id !== id),
+            isLoading: false
+          }));
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to delete alert',
+            isLoading: false 
+          });
+        }
+      },
 
       // Update rule
-      updateRule: (id, updates) => set((state) => ({
-        rules: state.rules.map(r => 
-          r.id === id ? { ...r, ...updates } : r
-        )
-      })),
+      updateRule: async (id, updates) => {
+        set({ isLoading: true, error: null });
+        try {
+          const updatedRule = await alertsService.updateAlert(id, updates);
+          set((state) => ({
+            rules: state.rules.map(r => r.id === id ? updatedRule : r),
+            isLoading: false
+          }));
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to update alert',
+            isLoading: false 
+          });
+        }
+      },
 
       // Toggle rule active status
-      toggleRule: (id) => set((state) => ({
-        rules: state.rules.map(r =>
-          r.id === id ? { ...r, isActive: !r.isActive } : r
-        )
-      })),
+      toggleRule: async (id) => {
+        const rule = get().rules.find(r => r.id === id);
+        if (rule) {
+          await get().updateRule(id, { isActive: !rule.isActive });
+        }
+      },
 
       // ========== Alert History ==========
 

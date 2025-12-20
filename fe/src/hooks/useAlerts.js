@@ -1,18 +1,24 @@
 import { useAlertsStore } from '../store/alertsStore';
+import { useEffect } from 'react';
+import { AlertType } from '../services/alertsService';
 
 export const useAlerts = () => {
   const store = useAlertsStore();
+
+  // Fetch alerts on mount
+  useEffect(() => {
+    store.fetchAlerts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Get active rules
   const getActiveRules = () => {
     return store.rules.filter(r => r.isActive);
   };
 
-  // Get rules by city
-  const getRulesByCity = (cityName) => {
-    return store.rules.filter(r => 
-      r.cityName.toLowerCase() === cityName.toLowerCase()
-    );
+  // Get rules by location
+  const getRulesByLocation = (locationId) => {
+    return store.rules.filter(r => r.locationId === locationId);
   };
 
   // Get recent alerts
@@ -29,12 +35,12 @@ export const useAlerts = () => {
   const validateRule = (rule) => {
     const errors = [];
 
-    if (!rule.cityName) {
-      errors.push('City name is required');
+    if (!rule.locationId) {
+      errors.push('Location is required');
     }
 
-    if (!rule.conditionType) {
-      errors.push('Condition type is required');
+    if (!rule.type) {
+      errors.push('Alert type is required');
     }
 
     if (rule.threshold === undefined || rule.threshold === null) {
@@ -42,25 +48,35 @@ export const useAlerts = () => {
     }
 
     // Validate threshold ranges
-    switch (rule.conditionType) {
-      case 'rain':
+    switch (rule.type) {
+      case AlertType.RAIN:
         if (rule.threshold < 0 || rule.threshold > 100) {
           errors.push('Rain threshold must be between 0-100 mm');
         }
         break;
-      case 'temp_high':
+      case AlertType.TEMPERATURE_HIGH:
         if (rule.threshold < 30 || rule.threshold > 50) {
           errors.push('High temperature threshold must be between 30-50°C');
         }
         break;
-      case 'temp_low':
+      case AlertType.TEMPERATURE_LOW:
         if (rule.threshold < -20 || rule.threshold > 20) {
           errors.push('Low temperature threshold must be between -20-20°C');
         }
         break;
-      case 'aqi':
+      case AlertType.AQI:
         if (rule.threshold < 0 || rule.threshold > 500) {
           errors.push('AQI threshold must be between 0-500');
+        }
+        break;
+      case AlertType.WIND:
+        if (rule.threshold < 0 || rule.threshold > 200) {
+          errors.push('Wind threshold must be between 0-200 km/h');
+        }
+        break;
+      case AlertType.HUMIDITY:
+        if (rule.threshold < 0 || rule.threshold > 100) {
+          errors.push('Humidity threshold must be between 0-100%');
         }
         break;
     }
@@ -72,7 +88,7 @@ export const useAlerts = () => {
   };
 
   // Add rule with validation
-  const addRuleWithValidation = (rule) => {
+  const addRuleWithValidation = async (rule) => {
     const validation = validateRule(rule);
     
     if (!validation.isValid) {
@@ -80,18 +96,22 @@ export const useAlerts = () => {
       return false;
     }
 
-    store.addRule(rule);
-    store.clearError();
-    return true;
+    const result = await store.addRule(rule);
+    if (result) {
+      store.clearError();
+      return true;
+    }
+    return false;
   };
 
   return {
     ...store,
     getActiveRules,
-    getRulesByCity,
+    getRulesByLocation,
     getRecentAlerts,
     getUnreadAlerts,
     validateRule,
-    addRuleWithValidation
+    addRuleWithValidation,
+    AlertType
   };
 };

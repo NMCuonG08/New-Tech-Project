@@ -7,6 +7,11 @@ import authRoutes from "./routes/authRoutes";
 import aiRoutes from "./routes/ai.route";
 import locationRoutes from "./routes/locationRoutes";
 import weatherRoutes from "./routes/weatherRoutes";
+import favoriteRoutes from "./routes/favoriteRoutes";
+import alertRoutes from "./routes/alertRoutes";
+import noteRoutes from "./routes/noteRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
+import { seedAdminUser } from "./seeds/adminSeed";
 import dotenv from "dotenv";
 import session from "express-session";
 import "./config/passport";
@@ -53,9 +58,16 @@ app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/locations", locationRoutes);
 app.use("/api/weather", weatherRoutes);
+app.use("/api/favorites", favoriteRoutes);
+app.use("/api/alerts", alertRoutes);
+app.use("/api/notes", noteRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 AppDataSource.initialize()
-  .then(() => {
+  .then(async () => {
     console.log("Data Source has been initialized");
+
+    // Seed admin user
+    await seedAdminUser();
 
     app.listen(ENV.PORT, () => {
       console.log(`Server is running at http://localhost:${ENV.PORT}`);

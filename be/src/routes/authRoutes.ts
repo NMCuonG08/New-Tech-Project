@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, login } from "../controllers/authController";
+import { register, login, getCurrentUser } from "../controllers/authController";
 import { verifyToken } from "../middlewares/auth.middleware";
 import passport from "passport";
 
@@ -7,6 +7,7 @@ const router = Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.get("/me", verifyToken, getCurrentUser);
 router.get("/protected", verifyToken, (req, res) => {
   res.json({ message: "This is a protected route." });
 });

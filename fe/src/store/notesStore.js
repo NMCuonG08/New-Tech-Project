@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import notesService from '../services/notesService';
 
 export const useNotesStore = create(
   persist(
@@ -9,34 +10,106 @@ export const useNotesStore = create(
       error: null,
       draft: null, // Auto-save draft
 
+      // ========== Fetch from Backend ==========
+
+      // Fetch all notes
+      fetchNotes: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const data = await notesService.getNotes();
+          set({ notes: data, isLoading: false });
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to fetch notes',
+            isLoading: false 
+          });
+        }
+      },
+
+      // Fetch notes by location
+      fetchNotesByLocation: async (locationId) => {
+        set({ isLoading: true, error: null });
+        try {
+          const data = await notesService.getNotesByLocation(locationId);
+          return data;
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to fetch location notes',
+            isLoading: false 
+          });
+          return [];
+        }
+      },
+
+      // Fetch notes by date range
+      fetchNotesByDateRange: async (startDate, endDate) => {
+        set({ isLoading: true, error: null });
+        try {
+          const data = await notesService.getNotesByDateRange(startDate, endDate);
+          return data;
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to fetch notes by date range',
+            isLoading: false 
+          });
+          return [];
+        }
+      },
+
       // Add note
-      addNote: (note) => set((state) => ({
-        notes: [
-          ...state.notes,
-          {
-            ...note,
-            id: Date.now(),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
-        ],
-        draft: null
-      })),
+      addNote: async (note) => {
+        set({ isLoading: true, error: null });
+        try {
+          const newNote = await notesService.createNote(note);
+          set((state) => ({
+            notes: [...state.notes, newNote],
+            isLoading: false,
+            draft: null
+          }));
+          return newNote;
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to create note',
+            isLoading: false 
+          });
+          return null;
+        }
+      },
 
       // Update note
-      updateNote: (id, updates) => set((state) => ({
-        notes: state.notes.map(n =>
-          n.id === id
-            ? { ...n, ...updates, updatedAt: new Date().toISOString() }
-            : n
-        ),
-        draft: null
-      })),
+      updateNote: async (id, updates) => {
+        set({ isLoading: true, error: null });
+        try {
+          const updatedNote = await notesService.updateNote(id, updates);
+          set((state) => ({
+            notes: state.notes.map(n => n.id === id ? updatedNote : n),
+            isLoading: false,
+            draft: null
+          }));
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to update note',
+            isLoading: false 
+          });
+        }
+      },
 
       // Delete note
-      deleteNote: (id) => set((state) => ({
-        notes: state.notes.filter(n => n.id !== id)
-      })),
+      deleteNote: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+          await notesService.deleteNote(id);
+          set((state) => ({
+            notes: state.notes.filter(n => n.id !== id),
+            isLoading: false
+          }));
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to delete note',
+            isLoading: false 
+          });
+        }
+      },
 
       // Get notes by city
       getNotesByCity: (cityName) => {

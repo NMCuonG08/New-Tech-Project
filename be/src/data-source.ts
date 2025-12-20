@@ -2,6 +2,9 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { User } from "./entities/User";
 import { Location } from "./entities/Location";
+import { Favorite } from "./entities/Favorite";
+import { Alert } from "./entities/Alert";
+import { Note } from "./entities/Note";
 import { ENV } from "./config/env";
 
 export const AppDataSource = new DataSource({
@@ -13,7 +16,7 @@ export const AppDataSource = new DataSource({
   database: ENV.DB_NAME,
   synchronize: true, // Chỉ nên dùng cho môi trường dev
   logging: false,
-  entities: [User, Location],
+  entities: [User, Location, Favorite, Alert, Note],
   migrations: [],
   subscribers: [],
 });

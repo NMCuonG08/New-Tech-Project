@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useDashboard } from '../../hooks/useDashboard';
 import {
     Users,
     Activity,
@@ -12,34 +13,13 @@ import {
     CheckCircle,
     Clock,
     Zap,
-    MapPin
+    MapPin,
+    RefreshCw,
+    Loader2,
 } from 'lucide-react';
 
 export function DashboardPage() {
-    // Mock data - Backend sẽ thay thế bằng API
-    const [stats] = useState({
-        totalUsers: 1234,
-        activeUsers: 856,
-        weatherRequests: 45678,
-        aiQueries: 3421,
-        newUsersToday: 23,
-        avgResponseTime: '1.2s',
-    });
-
-    const [recentUsers] = useState([
-        { id: 1, username: 'john_doe', email: 'john@example.com', joinDate: '2024-12-10', status: 'active' },
-        { id: 2, username: 'jane_smith', email: 'jane@example.com', joinDate: '2024-12-09', status: 'active' },
-        { id: 3, username: 'bob_wilson', email: 'bob@example.com', joinDate: '2024-12-08', status: 'inactive' },
-        { id: 4, username: 'alice_brown', email: 'alice@example.com', joinDate: '2024-12-07', status: 'active' },
-        { id: 5, username: 'charlie_davis', email: 'charlie@example.com', joinDate: '2024-12-06', status: 'active' },
-    ]);
-
-    const [systemHealth] = useState({
-        database: 'healthy',
-        api: 'healthy',
-        ai: 'warning',
-        cache: 'healthy',
-    });
+    const { stats, recentUsers, systemHealth, loading, error, refresh } = useDashboard();
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -72,10 +52,20 @@ export function DashboardPage() {
             <div className="mx-auto max-w-7xl">
                 {/* Header with Tabs */ }
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-                        <BarChart3 size={ 36 } className="text-blue-400" />
-                        Admin Dashboard
-                    </h1>
+                    <div className="flex items-center justify-between mb-2">
+                        <h1 className="text-4xl font-bold text-white flex items-center gap-3">
+                            <BarChart3 size={ 36 } className="text-blue-400" />
+                            Admin Dashboard
+                        </h1>
+                        <button
+                            onClick={ refresh }
+                            disabled={ loading }
+                            className="flex items-center gap-2 rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-blue-300 transition hover:bg-blue-500/30 disabled:opacity-50"
+                        >
+                            <RefreshCw size={ 16 } className={ loading ? 'animate-spin' : '' } />
+                            Làm mới
+                        </button>
+                    </div>
                     <p className="text-slate-400 mb-6">
                         Tổng quan hệ thống và phân tích dữ liệu
                     </p>
@@ -103,8 +93,23 @@ export function DashboardPage() {
                     </div>
                 </div>
 
+                {/* Loading State */ }
+                { loading && !stats && (
+                    <div className="flex items-center justify-center py-20">
+                        <Loader2 size={ 48 } className="animate-spin text-blue-400" />
+                    </div>
+                ) }
+
+                {/* Error State */ }
+                { error && (
+                    <div className="rounded-2xl border border-red-500/50 bg-red-500/10 p-6 backdrop-blur-sm mb-8">
+                        <p className="text-red-400">{ error }</p>
+                    </div>
+                ) }
+
                 {/* Stats Grid */ }
-                <div className="grid gap-6 mb-8 sm:grid-cols-2 lg:grid-cols-4">
+                { stats && (
+                    <div className="grid gap-6 mb-8 sm:grid-cols-2 lg:grid-cols-4">
                     {/* Total Users */ }
                     <div className="group rounded-2xl border border-white/10 bg-gradient-to-br from-blue-500/10 to-blue-600/5 p-6 backdrop-blur-sm transition hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/20">
                         <div className="flex items-center justify-between mb-3">
@@ -173,7 +178,9 @@ export function DashboardPage() {
                         </p>
                     </div>
                 </div>
+                ) }
 
+                { stats && recentUsers && systemHealth && (
                 <div className="grid gap-6 lg:grid-cols-3">
                     {/* Recent Users Table */ }
                     <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-slate-900/50 p-6 backdrop-blur-sm">
@@ -292,6 +299,7 @@ export function DashboardPage() {
                         </div>
                     </div>
                 </div>
+                ) }
             </div>
         </div>
     );

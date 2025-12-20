@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import favoritesService from '../services/favoritesService';
 
 export const useFavoritesStore = create(
   persist(
@@ -8,33 +9,69 @@ export const useFavoritesStore = create(
       isLoading: false,
       error: null,
 
+      // Fetch all favorites from backend
+      fetchFavorites: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const data = await favoritesService.getFavorites();
+          set({ favorites: data, isLoading: false });
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to fetch favorites',
+            isLoading: false 
+          });
+        }
+      },
+
       // Add favorite
-      addFavorite: (city) => {
-        const { favorites } = get();
-        
-        // Check duplicate
-        const exists = favorites.find(
-          f => f.cityName.toLowerCase() === city.cityName.toLowerCase()
-        );
-        
-        if (exists) {
-          set({ error: 'City already in favorites' });
+      addFavorite: async (locationId) => {
+        set({ isLoading: true, error: null });
+        try {
+          const newFavorite = await favoritesService.createFavorite(locationId);
+          set((state) => ({
+            favorites: [...state.favorites, newFavorite],
+            isLoading: false,
+            error: null
+          }));
+          return true;
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to add favorite',
+            isLoading: false 
+          });
           return false;
         }
-
-        set({
-          favorites: [...favorites, { ...city, id: Date.now() }],
-          error: null
-        });
-        return true;
       },
 
       // Remove favorite
-      removeFavorite: (id) => set((state) => ({
-        favorites: state.favorites.filter(f => f.id !== id)
-      })),
+      removeFavorite: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+          await favoritesService.deleteFavorite(id);
+          set((state) => ({
+            favorites: state.favorites.filter(f => f.id !== id),
+            isLoading: false
+          }));
+        } catch (error) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to remove favorite',
+            isLoading: false 
+          });
+        }
+      },
 
-      // Update favorite
+      // Check if location is favorite
+      checkFavorite: async (locationId) => {
+        try {
+          const result = await favoritesService.checkFavorite(locationId);
+          return result.isFavorite;
+        } catch (error) {
+          console.error('Failed to check favorite:', error);
+          return false;
+        }
+      },
+
+      // Update favorite (local only for UI purposes like reordering)
       updateFavorite: (id, updates) => set((state) => ({
         favorites: state.favorites.map(f => 
           f.id === id ? { ...f, ...updates } : f
