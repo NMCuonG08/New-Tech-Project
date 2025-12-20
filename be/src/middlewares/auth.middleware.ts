@@ -1,11 +1,15 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import { User } from "../entities/User";
 
-interface AuthenticatedRequest extends Request {
-  user?: any;
+interface JWTPayload {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
 }
 
-export const verifyToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers["authorization"]?.split(" ")[1];
 
   if (!token) {
@@ -13,8 +17,8 @@ export const verifyToken = (req: AuthenticatedRequest, res: Response, next: Next
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-    req.user = decoded;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload;
+    req.user = decoded as any as User;
     next();
   } catch (err) {
     res.status(400).json({ message: "Invalid token." });

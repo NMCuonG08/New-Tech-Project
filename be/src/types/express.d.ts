@@ -1,11 +1,10 @@
-// Extended the Express `Request` interface to include the `user` property.
-
-import { User } from "../entities/User";
+import { User as EntityUser } from "../entities/User";
 
 declare global {
   namespace Express {
+    interface User extends EntityUser {}
     interface Request {
-      user?: User;
+      user?: EntityUser;
     }
   }
 }
