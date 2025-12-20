@@ -1,59 +1,104 @@
-// Notification Service - Push notifications cho weather alerts
+// Notification Service - Browser notifications for weather alerts
 
-const PUSH_SERVER_URL = import.meta.env.VITE_PUSH_SERVER_URL || 'http://localhost:4000'
-
-const urlBase64ToUint8Array = (base64String) => {
-    const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
-    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/'
-    )
-    const rawData = window.atob(base64)
-    const outputArray = new Uint8Array(rawData.length)
-    for (let i = 0; i < rawData.length; i += 1) {
-        outputArray[i] = rawData.charCodeAt(i)
-    }
-    return outputArray
-}
-
+/**
+ * Request notification permission from the browser
+ */
 export async function requestNotificationPermission() {
-    if (!('Notification' in window)) return 'denied'
-    if (Notification.permission !== 'default') return Notification.permission
-    return Notification.requestPermission()
+    if (!('Notification' in window)) {
+        console.warn('This browser does not support notifications');
+        return 'denied';
+    }
+    
+    if (Notification.permission !== 'default') {
+        return Notification.permission;
+    }
+    
+    return await Notification.requestPermission();
 }
 
-export async function subscribeToPushNotifications() {
-    const publicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
-    if (!publicKey) throw new Error('Missing VAPID public key')
-
-    const registration = await navigator.serviceWorker.ready
-    let subscription = await registration.pushManager.getSubscription()
-
-    if (!subscription) {
-        subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(publicKey),
-        })
+/**
+ * Show a browser notification
+ */
+export function showNotification(title, options = {}) {
+    if (!('Notification' in window)) {
+        console.warn('This browser does not support notifications');
+        return null;
     }
 
-    await fetch(`${PUSH_SERVER_URL}/subscribe`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subscription),
-    })
+    if (Notification.permission !== 'granted') {
+        console.warn('Notification permission not granted');
+        return null;
+    }
 
-    return subscription
+    const defaultOptions = {
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        vibrate: [200, 100, 200],
+        requireInteraction: false,
+        ...options
+    };
+
+    return new Notification(title, defaultOptions);
 }
 
-export async function sendServerTestPush(payload) {
-    const response = await fetch(`${PUSH_SERVER_URL}/send-notification`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-    })
+/**
+ * Show a weather alert notification
+ */
+export function showWeatherAlert(alertData) {
+    const { type, city, temperature, threshold, condition } = alertData;
+    
+    let title = 'Weather Alert';
+    let body = '';
+    let icon = '/pwa-192x192.png';
 
-    if (!response.ok) {
-        throw new Error('Failed to send push notification')
+    switch(type) {
+        case 'temperature_high':
+            title = `🌡️ High Temperature Alert`;
+            body = `${city}: ${temperature}°C (Threshold: ${threshold}°C)`;
+            break;
+        case 'temperature_low':
+            title = `❄️ Low Temperature Alert`;
+            body = `${city}: ${temperature}°C (Threshold: ${threshold}°C)`;
+            break;
+        case 'rain':
+            title = `🌧️ Rain Alert`;
+            body = `Rain expected in ${city}`;
+            break;
+        case 'wind':
+            title = `💨 Wind Alert`;
+            body = `High wind speed in ${city}`;
+            break;
+        case 'aqi':
+            title = `😷 Air Quality Alert`;
+            body = `Poor air quality in ${city}`;
+            break;
+        case 'humidity':
+            title = `💧 Humidity Alert`;
+            body = `High humidity in ${city}`;
+            break;
+        default:
+            body = `Weather alert for ${city}`;
     }
 
-    return response.json()
+    if (condition) {
+        body += ` - ${condition}`;
+    }
+
+    return showNotification(title, {
+        body,
+        icon,
+        tag: `weather-alert-${type}-${city}`,
+        data: { type: 'weather-alert', ...alertData }
+    });
+}
+
+/**
+ * Test notification
+ */
+export function sendTestNotification(title = 'Weather PWA', message = 'Test notification') {
+    return showNotification(title, {
+        body: message,
+        tag: 'test-notification'
+    });
 }
 

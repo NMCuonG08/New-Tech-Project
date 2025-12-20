@@ -5,8 +5,14 @@ export const useNotes = () => {
   const store = useNotesStore();
   const autoSaveTimeout = useRef(null);
 
+  // Fetch notes on mount
+  useEffect(() => {
+    store.fetchNotes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Auto-save draft
-  const autoSaveDraft = (content, cityName, noteDate) => {
+  const autoSaveDraft = (content, locationId, noteDate) => {
     // Clear existing timeout
     if (autoSaveTimeout.current) {
       clearTimeout(autoSaveTimeout.current);
@@ -14,27 +20,36 @@ export const useNotes = () => {
 
     // Set new timeout
     autoSaveTimeout.current = setTimeout(() => {
-      store.saveDraft({ content, cityName, noteDate });
+      store.saveDraft({ content, locationId, noteDate });
     }, 2000); // Auto-save after 2 seconds of inactivity
   };
 
   // Save or update note
-  const saveNote = (cityName, noteDate, content) => {
+  const saveNote = async (locationId, date, title, content) => {
     if (!content || !content.trim()) {
       store.setError('Note content cannot be empty');
       return false;
     }
 
-    const existingNote = store.getNote(cityName, noteDate);
+    if (!title || !title.trim()) {
+      store.setError('Note title cannot be empty');
+      return false;
+    }
+
+    const existingNote = store.notes.find(n => 
+      n.locationId === locationId && 
+      new Date(n.date).toDateString() === new Date(date).toDateString()
+    );
 
     if (existingNote) {
       // Update existing note
-      store.updateNote(existingNote.id, { content });
+      await store.updateNote(existingNote.id, { title, content, date });
     } else {
       // Add new note
-      store.addNote({
-        cityName,
-        noteDate,
+      await store.addNote({
+        locationId,
+        date,
+        title,
         content
       });
     }
@@ -48,7 +63,7 @@ export const useNotes = () => {
     const grouped = {};
     
     store.notes.forEach(note => {
-      const date = new Date(note.noteDate).toDateString();
+      const date = new Date(note.date).toDateString();
       if (!grouped[date]) {
         grouped[date] = [];
       }
@@ -58,30 +73,29 @@ export const useNotes = () => {
     return grouped;
   };
 
-  // Get notes grouped by city
-  const getNotesGroupedByCity = () => {
+  // Get notes grouped by location
+  const getNotesGroupedByLocation = () => {
     const grouped = {};
     
     store.notes.forEach(note => {
-      const city = note.cityName;
-      if (!grouped[city]) {
-        grouped[city] = [];
+      const locationId = note.locationId;
+      if (!grouped[locationId]) {
+        grouped[locationId] = [];
       }
-      grouped[city].push(note);
+      grouped[locationId].push(note);
     });
 
     return grouped;
   };
 
   // Get notes for date range
-  const getNotesInRange = (startDate, endDate) => {
-    const start = new Date(startDate).setHours(0, 0, 0, 0);
-    const end = new Date(endDate).setHours(23, 59, 59, 999);
+  const getNotesInRange = async (startDate, endDate) => {
+    return await store.fetchNotesByDateRange(startDate, endDate);
+  };
 
-    return store.notes.filter(note => {
-      const noteTime = new Date(note.noteDate).getTime();
-      return noteTime >= start && noteTime <= end;
-    });
+  // Get notes by location
+  const getNotesByLocation = async (locationId) => {
+    return await store.fetchNotesByLocation(locationId);
   };
 
   // Cleanup auto-save timeout on unmount
@@ -98,7 +112,8 @@ export const useNotes = () => {
     autoSaveDraft,
     saveNote,
     getNotesGroupedByDate,
-    getNotesGroupedByCity,
-    getNotesInRange
+    getNotesGroupedByLocation,
+    getNotesInRange,
+    getNotesByLocation
   };
 };

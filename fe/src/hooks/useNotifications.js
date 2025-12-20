@@ -1,49 +1,44 @@
-// useNotifications hook - Quản lý notifications
+// useNotifications hook - Manage browser notifications
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react';
 import {
     requestNotificationPermission,
-    subscribeToPushNotifications,
-    sendServerTestPush,
-} from '../services/notificationService'
+    sendTestNotification,
+    showNotification,
+    showWeatherAlert
+} from '../services/notificationService';
 
 export function useNotifications() {
-    const [permission, setPermission] = useState(Notification.permission)
+    const [permission, setPermission] = useState(
+        typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+    );
 
     const askPermission = useCallback(async () => {
-        const result = await requestNotificationPermission()
-        setPermission(result)
-        return result
-    }, [])
+        const result = await requestNotificationPermission();
+        setPermission(result);
+        return result;
+    }, []);
 
     useEffect(() => {
-        async function ensurePermissionAndSubscribe() {
-            if (permission === 'granted') {
-                try {
-                    await subscribeToPushNotifications()
-                    console.log('🔔 Auto subscribed to push server')
-                } catch (error) {
-                    console.error('Subscribe push failed:', error)
-                }
-            } else if (permission === 'default') {
-                const result = await askPermission()
-                if (result === 'granted') {
-                    try {
-                        await subscribeToPushNotifications()
-                        console.log('🔔 Auto subscribed to push server')
-                    } catch (error) {
-                        console.error('Subscribe push failed:', error)
-                    }
-                }
-            }
+        // Auto-request permission on mount if still default
+        if (permission === 'default') {
+            askPermission();
         }
+    }, []);
 
-        ensurePermissionAndSubscribe()
-    }, [permission, askPermission])
+    const sendTestPush = useCallback((payload) => {
+        if (permission !== 'granted') {
+            throw new Error('Notification permission not granted');
+        }
+        return sendTestNotification(payload.title, payload.message);
+    }, [permission]);
 
     return {
         permission,
-        sendServerTestPush,
-    }
+        askPermission,
+        sendTestPush,
+        showNotification,
+        showWeatherAlert,
+    };
 }
 

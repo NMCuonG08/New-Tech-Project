@@ -48,7 +48,8 @@ export function WeatherPage() {
   const { isOffline, wasOffline } = useOffline();
   const {
     permission: notificationPermission,
-    sendServerTestPush,
+    askPermission,
+    sendTestPush,
   } = useNotifications();
 
   const { isInstallable, isInstalled, install } = useInstallPrompt();
@@ -442,12 +443,8 @@ export function WeatherPage() {
 
             <NotificationSettings
               permission={ notificationPermission }
-              onSendPush={ (payload) =>
-                sendServerTestPush(payload).catch((error) => {
-                  console.error(error)
-                  alert('Không gửi được push notification, kiểm tra server backend.')
-                })
-              }
+              onRequestPermission={ askPermission }
+              onSendPush={ sendTestPush }
             />
 
             <div className="rounded-3xl border border-white/20 bg-slate-900/70 p-6 shadow-2xl backdrop-blur-xl">

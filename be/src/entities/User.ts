@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
+import { Favorite } from "./Favorite";
+import { Alert } from "./Alert";
+import { Note } from "./Note";
+
+export enum UserRole {
+  USER = "user",
+  ADMIN = "admin"
+}
 
 @Entity()
 export class User {
@@ -16,4 +24,26 @@ export class User {
 
   @Column({ unique: true, nullable: true })
   googleId?: string;
+
+  @Column({
+    type: "enum",
+    enum: UserRole,
+    default: UserRole.USER
+  })
+  role!: UserRole;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
+
+  @OneToMany(() => Favorite, (favorite) => favorite.user)
+  favorites!: Favorite[];
+
+  @OneToMany(() => Alert, (alert) => alert.user)
+  alerts!: Alert[];
+
+  @OneToMany(() => Note, (note) => note.user)
+  notes!: Note[];
 }

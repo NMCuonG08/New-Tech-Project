@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes, useLocation, Link } from 'react-router-dom';
 import App from '../App';
 import { useAuth } from '../hooks/useAuth';
+import { AdminRoute } from '../components/auth/AdminRoute';
 import { LoginPage } from '../pages/Auth/LoginPage';
 import { RegisterPage } from '../pages/Auth/RegisterPage';
 import { OAuth2CallbackPage } from '../pages/Auth/OAuth2CallbackPage';
@@ -17,8 +18,20 @@ import { NavbarCitySearch } from '../components/NavbarCitySearch';
 import { Heart, Bell, StickyNote } from 'lucide-react';
 
 function ProtectedRoute({ children }) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, loading } = useAuth();
     const location = useLocation();
+
+    // Show loading spinner while checking authentication
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <div className="text-slate-100 text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                    <p className="text-sm text-slate-400">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace state={ { from: location } } />;
@@ -28,11 +41,26 @@ function ProtectedRoute({ children }) {
 }
 
 function RootLayout() {
-    const { user, isAuthenticated, logout } = useAuth();
+    const { user, isAuthenticated, isAdmin, logout, loading } = useAuth();
     const location = useLocation();
+    
+    console.log('🎨 RootLayout render:', { loading, isAuthenticated, user: user?.username, path: location.pathname });
 
     const isLogin = location.pathname === '/login';
     const isRegister = location.pathname === '/register';
+    
+    // Show loading spinner while checking authentication
+    if (loading) {
+        console.log('⏳ Showing loading spinner');
+        return (
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <div className="text-slate-100 text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                    <p className="text-sm text-slate-400">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     // Navigation items for authenticated users
     const navItems = [
@@ -126,14 +154,16 @@ function RootLayout() {
                                 >
                                     👤<span className="hidden lg:inline"> Profile</span>
                                 </Link>
-                                <Link
-                                    to="/admin"
-                                    className="rounded-full border border-white/20 px-2 lg:px-3 py-1 text-slate-200 hover:border-purple-400 hover:bg-purple-500/20 hover:text-purple-100 transition"
-                                    title="Dashboard"
-                                >
-                                    📊<span className="hidden lg:inline"> Dashboard</span>
-                                </Link>
-                                <div className="flex items-center gap-1.5 lg:gap-2 rounded-full bg-slate-900/70 px-2 lg:px-3 py-1 text-[11px] text-slate-200">
+                                {isAdmin && (
+                                    <Link
+                                        to="/admin"
+                                        className="rounded-full border border-white/20 px-2 lg:px-3 py-1 text-slate-200 hover:border-purple-400 hover:bg-purple-500/20 hover:text-purple-100 transition"
+                                        title="Dashboard"
+                                    >
+                                        📊<span className="hidden lg:inline"> Dashboard</span>
+                                    </Link>
+                                )}
+                                <div className="flex items-center gap-1.5 lg:gap-2 rounded-full bg-slate-900/70 px-2 lg:px-3 py-1 text-[11px] text-slate-200">{isAdmin && <span className="text-purple-400 font-semibold hidden lg:inline">[Admin]</span>}
                                     <span className="max-w-[60px] lg:max-w-[100px] truncate font-medium">
                                         { user?.username }
                                     </span>
@@ -184,6 +214,7 @@ function RootLayout() {
 }
 
 export function RootRoutes() {
+    console.log('🔄 RootRoutes rendering');
     return (
         <Routes>
             <Route element={ <RootLayout /> }>
@@ -198,10 +229,10 @@ export function RootRoutes() {
                 {/* OAuth2 Callback Handler */ }
                 <Route path="/callback" element={ <App /> } />
 
-                {/* Protected Routes */ }
-                <Route path="/profile" element={ <ProfilePage /> } />
-                <Route path="/admin" element={ <DashboardPage /> } />
-                <Route path="/admin/cities" element={ <CityManagementPage /> } />
+                
+                {/* Admin Routes - Protected */ }
+                <Route path="/admin" element={ <AdminRoute><DashboardPage /></AdminRoute> } />
+                <Route path="/admin/cities" element={ <AdminRoute><CityManagementPage /></AdminRoute> } />
 
                 {/* Main Weather Page */ }
                 <Route path="/weather" element={ <WeatherPage /> } />
@@ -214,6 +245,9 @@ export function RootRoutes() {
                 {/* Weather Forecast Routes */ }
                 <Route path="/hourly" element={ <HourlyForecastPage /> } />
                 <Route path="/daily" element={ <DailyForecastPage /> } />
+
+                {/* User Profile - Protected */ }
+                <Route path="/profile" element={ <ProtectedRoute><ProfilePage /></ProtectedRoute> } />
 
                 {/* Redirects */ }
                 <Route path="/" element={ <Navigate to="/weather" replace /> } />

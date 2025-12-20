@@ -4,7 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import './index.css'
 import { RootRoutes } from './routes/RootRoutes.jsx'
+import { ErrorBoundary } from './components/ErrorBoundary.jsx'
 import { registerSW } from 'virtual:pwa-register';
+
+console.log('🚀 Starting app initialization...');
 
 // Register service worker
 const updateSW = registerSW({
@@ -47,35 +50,41 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+console.log('📦 Creating React root...');
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-      <RootRoutes />
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#1e293b',
-            color: '#f1f5f9',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-            padding: '12px 16px',
-          },
-          success: {
-            iconTheme: {
-              primary: '#10b981',
-              secondary: '#f1f5f9',
+    <ErrorBoundary>
+      <BrowserRouter>
+        <RootRoutes />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#1e293b',
+              color: '#f1f5f9',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '16px',
+              padding: '12px 16px',
             },
-          },
-          error: {
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#f1f5f9',
+            success: {
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#f1f5f9',
+              },
             },
-          },
-        }}
-      />
-    </BrowserRouter>
+            error: {
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#f1f5f9',
+              },
+            },
+          }}
+        />
+      </BrowserRouter>
+    </ErrorBoundary>
   </StrictMode>,
 )
+
+console.log('✅ React app initialized');
