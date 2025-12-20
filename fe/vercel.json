@@ -1,8 +1,8 @@
 {
     "rewrites": [
         {
-            "source": "/:path((?!_next|static|favicon.ico|.*\\.).*)",
-            "destination": "http://98.87.6.224:3000/:path*"
+            "source": "/(weather|locations)/:path*",
+            "destination": "http://98.87.6.224:3000/api/$1/:path*"
         }
     ]
 }
