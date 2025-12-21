@@ -11,29 +11,33 @@ export function OAuth2CallbackPage() {
 
     useEffect(() => {
         const authStatus = searchParams.get('auth');
-        const userParam = searchParams.get('user');
-        const error = searchParams.get('error');
+        const errorMessage = searchParams.get('message');
+        const dataParam = searchParams.get('data');
 
-        if (error) {
+        if (authStatus === 'error') {
             setStatus('error');
-            toast.error('Đăng nhập thất bại: ' + error);
+            toast.error('Đăng nhập thất bại: ' + (errorMessage || 'Unknown error'));
             setTimeout(() => navigate('/login'), 2000);
             return;
         }
 
-        if (authStatus === 'success' && userParam) {
+        if (authStatus === 'success' && dataParam) {
             try {
-                const user = JSON.parse(decodeURIComponent(userParam));
+                const authData = JSON.parse(decodeURIComponent(dataParam));
                 
-                // Save user data to localStorage
-                saveAuthUser({ user, token: null }); // You may want to generate a token on backend
+                // Save user data and token to localStorage
+                saveAuthUser(authData);
                 setStatus('success');
                 
-                const username = user.username || user.email || 'User';
+                const username = authData.username || authData.email || 'User';
                 toast.success(`Chào mừng ${username}! 🎉`);
                 
-                setTimeout(() => navigate('/'), 1500);
+                // Force reload to ensure auth state is updated
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1500);
             } catch (err) {
+                console.error('OAuth callback error:', err);
                 setStatus('error');
                 toast.error('Lỗi xử lý dữ liệu người dùng');
                 setTimeout(() => navigate('/login'), 2000);
