@@ -48,11 +48,33 @@ router.get(
       // Successful authentication
       console.log('OAuth User from Passport:', user);
       
+      // Generate JWT token for OAuth user
+      const jwt = require("jsonwebtoken");
+      const token = jwt.sign(
+        { 
+          id: user.id, 
+          username: user.username,
+          email: user.email,
+          role: user.role 
+        }, 
+        process.env.JWT_SECRET || "your_secret_key", 
+        { expiresIn: "24h" }
+      );
+      
       // Clear the oauthMode from session
       delete (req.session as any).oauthMode;
       
-      // Redirect to root with auth success query params
-      res.redirect(`${frontendUrl}?auth=success&user=${encodeURIComponent(JSON.stringify(user))}`);
+      // Create response data
+      const authData = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        token
+      };
+      
+      // Redirect to frontend with token and user data
+      res.redirect(`${frontendUrl}?auth=success&data=${encodeURIComponent(JSON.stringify(authData))}`);
     })(req, res, next);
   }
 );

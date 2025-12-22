@@ -3,8 +3,9 @@ import { motion } from 'framer-motion';
 // OAuth2 Button Component
 export function OAuth2Buttons({ mode = 'register' }) {
     const handleGoogleLogin = () => {
-        // Backend sẽ implement endpoint này
-        window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/google?mode=${mode}`;
+        // Get backend URL from environment variable, removing /api suffix if present
+        const backendUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api').replace(/\/api$/, '');
+        window.location.href = `${backendUrl}/api/auth/google?mode=${mode}`;
     };
 
     return (

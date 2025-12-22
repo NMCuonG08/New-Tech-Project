@@ -12,7 +12,7 @@ function App() {
   // Handle OAuth2 callback
   useEffect(() => {
     const authStatus = searchParams.get('auth');
-    const userParam = searchParams.get('user');
+    const dataParam = searchParams.get('data');
     const errorMessage = searchParams.get('message');
 
     if (authStatus === 'error') {
@@ -32,15 +32,15 @@ function App() {
       return;
     }
 
-    if (authStatus === 'success' && userParam) {
+    if (authStatus === 'success' && dataParam) {
       try {
-        const userData = JSON.parse(decodeURIComponent(userParam));
-        console.log('OAuth User Data:', userData); // Debug log
+        const authData = JSON.parse(decodeURIComponent(dataParam));
+        console.log('OAuth Auth Data:', authData); // Debug log
 
-        // Save user data to localStorage
-        saveAuthUser({ user: userData, token: null });
+        // Save user data and token to localStorage
+        saveAuthUser(authData);
 
-        const username = userData.username || userData.email || 'User';
+        const username = authData.username || authData.email || 'User';
         toast.success(`Chào mừng ${username}! 🎉`);
 
         // Clear query params after processing
