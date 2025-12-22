@@ -79,12 +79,12 @@ export function ChatOverlay() {
             { !isOpen && (
                 <button
                     onClick={ toggleChat }
-                    className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-950"
+                    className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-950"
                     aria-label="Open chat"
                 >
-                    <MessageCircle className="h-6 w-6" />
+                    <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
                     { messages.length > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-red-500 text-[10px] sm:text-xs font-bold text-white">
                             { messages.length }
                         </span>
                     ) }
@@ -93,7 +93,7 @@ export function ChatOverlay() {
 
             {/* Chat Box */ }
             { isOpen && (
-                <div className="fixed bottom-6 right-6 z-50 flex h-[600px] w-[400px] flex-col rounded-2xl border border-white/20 bg-slate-900/95 backdrop-blur-xl shadow-2xl transition-all duration-300">
+                <div className="fixed inset-x-4 bottom-4 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 flex h-[calc(100vh-2rem)] sm:h-[600px] w-auto sm:w-[400px] flex-col rounded-2xl border border-white/20 bg-slate-900/95 backdrop-blur-xl shadow-2xl transition-all duration-300">
                     {/* Header */ }
                     <div className="relative flex items-center justify-between border-b border-white/10 px-4 py-3">
                         <div className="flex items-center gap-2 flex-1 min-w-0">

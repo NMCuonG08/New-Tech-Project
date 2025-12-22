@@ -259,18 +259,18 @@ export function WeatherPage() {
       <OfflineBanner isOffline={ isOffline } wasOffline={ wasOffline } />
       { showUpdate && <UpdatePrompt onUpdate={ handleUpdate } /> }
 
-      <main className="relative z-10 mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 lg:px-6">
-        <header className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-4 flex-1">
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
+      <main className="relative z-10 mx-auto flex max-w-6xl flex-col gap-6 px-3 py-6 sm:gap-8 sm:px-4 sm:py-10 lg:px-6">
+        <header className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-3 flex-1 sm:space-y-4">
+            <div className="space-y-1 sm:space-y-2">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.35em] text-slate-300/80">
                 Weather overview
               </p>
-              <h1 className="text-4xl font-semibold md:text-5xl drop-shadow-lg">
+              <h1 className="text-3xl font-semibold sm:text-4xl md:text-5xl drop-shadow-lg">
                 { locationName }
               </h1>
             </div>
-            <div className="flex flex-wrap gap-3 text-sm text-slate-200">
+            <div className="flex flex-wrap gap-2 sm:gap-3 text-xs sm:text-sm text-slate-200">
               <span className="flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 backdrop-blur-md border border-white/10">
                 <MapPin className="h-4 w-4" />
                 <span className="capitalize">{ locationName }</span>
@@ -289,12 +289,12 @@ export function WeatherPage() {
                   <span className="capitalize">{ weatherSummary }</span>
                 </span>
               ) }
-              <span className="flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 backdrop-blur-md border border-white/10">
-                <RefreshCw className="h-4 w-4" />
-                <span>Cập nhật: { lastUpdated }</span>
+              <span className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/30 px-2 sm:px-3 py-1 backdrop-blur-md border border-white/10">
+                <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="text-[11px] sm:text-xs">Cập nhật: { lastUpdated }</span>
               </span>
             </div>
-            <p className="text-sm text-slate-300/80">
+            <p className="text-xs sm:text-sm text-slate-300/80 hidden sm:block">
               Theo dõi thời tiết theo thời gian thực, hoạt động cả khi offline và có
               thông báo thông minh.
             </p>
@@ -318,11 +318,11 @@ export function WeatherPage() {
             ) }
           </div>
 
-          <div className="w-full max-w-xl rounded-3xl border border-white/20 bg-slate-900/70 p-5 shadow-2xl backdrop-blur-xl lg:w-[380px]">
-            <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">
+          <div className="w-full max-w-xl rounded-2xl sm:rounded-3xl border border-white/20 bg-slate-900/70 p-4 sm:p-5 shadow-2xl backdrop-blur-xl lg:w-[380px]">
+            <h2 className="mb-3 sm:mb-4 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">
               Tùy chỉnh nhanh
             </h2>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4">
 
               <div className="space-y-2">
                 <label htmlFor="units" className="block text-xs uppercase tracking-wide text-slate-400">
@@ -364,7 +364,7 @@ export function WeatherPage() {
           </div>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <section className="grid gap-4 sm:gap-6 lg:grid-cols-[2fr_1fr]">
           <WeatherCard
             weather={ weather }
             loading={ loading }
@@ -373,8 +373,8 @@ export function WeatherPage() {
             units={ units }
           />
 
-          <div className="flex flex-col gap-6">
-            <div className="rounded-3xl border border-white/20 bg-slate-900/70 p-6 shadow-2xl backdrop-blur-xl">
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <div className="rounded-2xl sm:rounded-3xl border border-white/20 bg-slate-900/70 p-4 sm:p-6 shadow-2xl backdrop-blur-xl">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-base font-semibold text-slate-100">
                   Trạng thái hệ thống

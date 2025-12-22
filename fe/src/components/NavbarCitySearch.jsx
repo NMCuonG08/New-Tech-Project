@@ -95,33 +95,33 @@ export function NavbarCitySearch({ onCitySelect }) {
     };
 
     return (
-        <div className="flex items-center gap-2 lg:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3">
             {/* Current Location Display */ }
-            <div className="flex items-center gap-1.5 rounded-full bg-white/5 px-2 lg:px-3 py-1.5 text-xs">
-                <MapPin className="h-3.5 w-3.5 text-blue-400 flex-shrink-0" />
-                <span className="font-medium text-slate-200 truncate max-w-[60px] lg:max-w-[100px]">{ currentCity }</span>
+            <div className="flex items-center gap-1 sm:gap-1.5 rounded-full bg-white/5 px-1.5 sm:px-2 lg:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs">
+                <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-blue-400 flex-shrink-0" />
+                <span className="font-medium text-slate-200 truncate max-w-[50px] sm:max-w-[60px] lg:max-w-[100px]">{ currentCity }</span>
             </div>
 
             {/* Forecast Navigation Links */ }
             <nav>
-                <ul className="flex items-center gap-1.5">
+                <ul className="flex items-center gap-1 sm:gap-1.5">
                     <li>
                         <Link
                             to={ `/hourly?city=${encodeURIComponent(currentCity)}` }
-                            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2 lg:px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:border-blue-400 hover:bg-blue-500/20 hover:text-blue-100"
+                            className="flex items-center gap-1 sm:gap-1.5 rounded-full border border-white/10 bg-white/5 px-1.5 sm:px-2 lg:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-slate-200 transition-all hover:border-blue-400 hover:bg-blue-500/20 hover:text-blue-100"
                             title="Hourly Forecast"
                         >
-                            <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+                            <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
                             <span className="hidden lg:inline">Hourly</span>
                         </Link>
                     </li>
                     <li>
                         <Link
                             to={ `/daily?city=${encodeURIComponent(currentCity)}` }
-                            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2 lg:px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:border-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-100"
+                            className="flex items-center gap-1 sm:gap-1.5 rounded-full border border-white/10 bg-white/5 px-1.5 sm:px-2 lg:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-slate-200 transition-all hover:border-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-100"
                             title="Daily Forecast"
                         >
-                            <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
+                            <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
                             <span className="hidden lg:inline">Daily</span>
                         </Link>
                     </li>
@@ -131,21 +131,21 @@ export function NavbarCitySearch({ onCitySelect }) {
             {/* Search Input */ }
             <div ref={ searchRef } className="relative">
                 <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
-                        <Search className="h-3.5 w-3.5 text-slate-400" />
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">
+                        <Search className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-400" />
                     </div>
                     <input
                         type="text"
                         value={ query }
                         onChange={ (e) => setQuery(e.target.value) }
                         placeholder="Tìm..."
-                        className="w-24 lg:w-40 rounded-full border border-white/10 bg-slate-900/60 py-1.5 pl-8 pr-7 text-xs font-medium text-slate-100 placeholder-slate-500 backdrop-blur transition-all focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:w-48"
+                        className="w-20 sm:w-24 lg:w-40 rounded-full border border-white/10 bg-slate-900/60 py-1 sm:py-1.5 pl-7 sm:pl-8 pr-6 sm:pr-7 text-[10px] sm:text-xs font-medium text-slate-100 placeholder-slate-500 backdrop-blur transition-all focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:w-32 sm:focus:w-48"
                         style={ { colorScheme: 'dark' } }
                     />
                     { query && (
                         <button
                             onClick={ handleClear }
-                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-200"
+                            className="absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-3 text-slate-400 hover:text-slate-200"
                             aria-label="Clear search"
                         >
                             <X className="h-3.5 w-3.5" />

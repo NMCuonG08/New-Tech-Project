@@ -50,37 +50,37 @@ export function ProfilePage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-8 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-6 px-3 sm:py-8 sm:px-4">
             <div className="mx-auto max-w-5xl">
                 {/* Header */}
-                <div className="mb-8 text-center">
-                    <h1 className="text-4xl font-bold text-white mb-2">
+                <div className="mb-6 sm:mb-8 text-center">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">
                         Thông Tin Cá Nhân
                     </h1>
-                    <p className="text-slate-400">
+                    <p className="text-sm sm:text-base text-slate-400">
                         Quản lý thông tin tài khoản của bạn
                     </p>
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
                     {/* Profile Card */}
                     <div className="lg:col-span-1">
-                        <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-6 backdrop-blur-sm">
+                        <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-slate-900/50 p-4 sm:p-6 backdrop-blur-sm">
                             <div className="flex flex-col items-center text-center">
                                 {/* Avatar */}
-                                <div className="relative mb-4">
-                                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-4xl font-bold text-white">
+                                <div className="relative mb-3 sm:mb-4">
+                                    <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-3xl sm:text-4xl font-bold text-white">
                                         {user?.username?.charAt(0).toUpperCase() || 'U'}
                                     </div>
-                                    <button className="absolute bottom-0 right-0 rounded-full bg-blue-500 p-2 text-white shadow-lg hover:bg-blue-600 transition">
-                                        <Camera size={16} />
+                                    <button className="absolute bottom-0 right-0 rounded-full bg-blue-500 p-1.5 sm:p-2 text-white shadow-lg hover:bg-blue-600 transition">
+                                        <Camera size={14} className="sm:w-4 sm:h-4" />
                                     </button>
                                 </div>
 
-                                <h2 className="text-2xl font-bold text-white mb-1">
+                                <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">
                                     {user?.username || 'User'}
                                 </h2>
-                                <p className="text-sm text-slate-400 mb-4">
+                                <p className="text-xs sm:text-sm text-slate-400 mb-3 sm:mb-4">
                                     {user?.email || 'user@example.com'}
                                 </p>
 
