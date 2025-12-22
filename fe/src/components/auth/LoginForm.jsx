@@ -22,16 +22,16 @@ export function LoginForm({ onLogin, loading, error, onSwitchToRegister }) {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-100">
+        <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-100 px-4">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-900/80 p-8 shadow-2xl backdrop-blur"
+                className="w-full max-w-md rounded-2xl sm:rounded-3xl border border-white/10 bg-slate-900/80 p-6 sm:p-8 shadow-2xl backdrop-blur"
             >
-                <div className="mb-6">
-                    <h1 className="mb-2 text-2xl font-semibold">Đăng nhập</h1>
-                    <p className="text-sm text-slate-400">
+                <div className="mb-5 sm:mb-6">
+                    <h1 className="mb-2 text-xl sm:text-2xl font-semibold">Đăng nhập</h1>
+                    <p className="text-xs sm:text-sm text-slate-400">
                         Đăng nhập để sử dụng ứng dụng thời tiết.
                     </p>
                 </div>

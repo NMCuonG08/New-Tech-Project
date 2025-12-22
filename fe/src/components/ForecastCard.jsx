@@ -14,13 +14,13 @@ export function ForecastCard({ forecast, loading, units = 'metric', backgroundIm
 
     if (loading && !forecast) {
         return (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
-                <div className="mb-6 h-7 w-48 animate-pulse rounded-full bg-white/10" />
-                <div className="flex gap-4 overflow-hidden">
+            <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-6 md:p-8 shadow-2xl backdrop-blur">
+                <div className="mb-4 sm:mb-6 h-6 sm:h-7 w-36 sm:w-48 animate-pulse rounded-full bg-white/10" />
+                <div className="flex gap-3 sm:gap-4 overflow-hidden">
                     { Array.from({ length: 4 }).map((_, index) => (
                         <div
                             key={ `forecast-skeleton-${index}` }
-                            className="h-48 w-40 animate-pulse rounded-3xl bg-white/10"
+                            className="h-40 w-32 sm:h-48 sm:w-40 animate-pulse rounded-2xl sm:rounded-3xl bg-white/10"
                         />
                     )) }
                 </div>
@@ -39,7 +39,7 @@ export function ForecastCard({ forecast, loading, units = 'metric', backgroundIm
     const unitSymbol = unitSymbolMap[units] ?? '°';
 
     return (
-        <div className="relative overflow-hidden rounded-3xl border border-white/20 shadow-2xl backdrop-blur-xl">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/20 shadow-2xl backdrop-blur-xl">
             {/* Background Image Layer */ }
             { backgroundImage && (
                 <>
@@ -66,25 +66,26 @@ export function ForecastCard({ forecast, loading, units = 'metric', backgroundIm
             ) }
 
             {/* Content Layer */ }
-            <div className="relative z-10 p-8">
-                <div className="flex items-center justify-between">
+            <div className="relative z-10 p-4 sm:p-6 md:p-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                     <div>
-                        <h3 className="inline-flex items-center gap-3 text-xl font-semibold text-white">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-500 shadow-lg">
+                        <h3 className="inline-flex items-center gap-2 sm:gap-3 text-base sm:text-lg md:text-xl font-semibold text-white">
+                            <span className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-500 shadow-lg text-sm sm:text-base">
                                 📅
                             </span>
-                            Dự báo 7 phiên tới
+                            <span className="hidden sm:inline">Dự báo 7 phiên tới</span>
+                            <span className="sm:hidden">Dự báo 7 phiên</span>
                         </h3>
-                        <p className="mt-2 text-sm text-slate-300">
+                        <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-slate-300">
                             Cập nhật mỗi 3 giờ · theo giờ địa phương
                         </p>
                     </div>
-                    <span className="rounded-full bg-gradient-to-r from-purple-500/30 to-indigo-500/30 px-4 py-1.5 text-xs uppercase tracking-wide text-purple-200 border border-purple-400/30">
+                    <span className="rounded-full bg-gradient-to-r from-purple-500/30 to-indigo-500/30 px-3 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs uppercase tracking-wide text-purple-200 border border-purple-400/30">
                         24 giờ tới
                     </span>
                 </div>
 
-                <div className="mt-6 flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20">
+                <div className="mt-4 sm:mt-6 flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20">
                     { selection.map((item) => {
                         const temp = Math.round(item.main.temp);
                         const tempMax = Math.round(item.main.temp_max);
@@ -105,35 +106,35 @@ export function ForecastCard({ forecast, loading, units = 'metric', backgroundIm
                         return (
                             <div
                                 key={ `${item.dt}-${icon}` }
-                                className="flex w-44 flex-none flex-col gap-3 rounded-3xl border border-white/20 bg-gradient-to-br from-slate-800/90 to-slate-900/90 p-4 text-slate-100 shadow-xl backdrop-blur-md hover:border-purple-400/40 hover:shadow-purple-500/10 transition-all duration-300"
+                                className="flex w-36 sm:w-40 md:w-44 flex-none flex-col gap-2 sm:gap-3 rounded-2xl sm:rounded-3xl border border-white/20 bg-gradient-to-br from-slate-800/90 to-slate-900/90 p-3 sm:p-4 text-slate-100 shadow-xl backdrop-blur-md hover:border-purple-400/40 hover:shadow-purple-500/10 transition-all duration-300"
                             >
-                                <div className="flex items-center justify-between text-xs uppercase tracking-wide text-slate-300">
+                                <div className="flex items-center justify-between text-[10px] sm:text-xs uppercase tracking-wide text-slate-300">
                                     <span className="font-semibold">{ dayName }</span>
                                     <span>{ time }</span>
                                 </div>
                                 <img
                                     src={ iconUrl }
                                     alt={ description }
-                                    className="mx-auto h-16 w-16 drop-shadow-[0_18px_30px_rgba(0,0,0,0.25)]"
+                                    className="mx-auto h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 drop-shadow-[0_18px_30px_rgba(0,0,0,0.25)]"
                                 />
                                 <div className="text-center">
-                                    <p className="flex items-center justify-center gap-2 text-3xl font-semibold text-white">
-                                        <Thermometer className="h-5 w-5" />
+                                    <p className="flex items-center justify-center gap-1.5 sm:gap-2 text-2xl sm:text-3xl font-semibold text-white">
+                                        <Thermometer className="h-4 w-4 sm:h-5 sm:w-5" />
                                         { temp }
-                                        <span className="text-lg text-slate-300">{ unitSymbol }</span>
+                                        <span className="text-base sm:text-lg text-slate-300">{ unitSymbol }</span>
                                     </p>
-                                    <p className="mt-1 text-xs capitalize text-slate-200">{ description }</p>
+                                    <p className="mt-1 text-[10px] sm:text-xs capitalize text-slate-200 line-clamp-2">{ description }</p>
                                 </div>
-                                <div className="flex items-center justify-between text-xs text-slate-300">
+                                <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-300">
                                     <span className="flex items-center gap-1">
-                                        <ArrowUp className="h-3.5 w-3.5" /> { tempMax }{ unitSymbol }
+                                        <ArrowUp className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> { tempMax }{ unitSymbol }
                                     </span>
                                     <span className="flex items-center gap-1">
-                                        <ArrowDown className="h-3.5 w-3.5" /> { tempMin }{ unitSymbol }
+                                        <ArrowDown className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> { tempMin }{ unitSymbol }
                                     </span>
                                 </div>
-                                <div className="flex items-center justify-center gap-2 text-xs text-slate-200">
-                                    <Umbrella className="h-3.5 w-3.5" />
+                                <div className="flex items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-slate-200">
+                                    <Umbrella className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                                     <span>{ rainChance }%</span>
                                 </div>
                             </div>

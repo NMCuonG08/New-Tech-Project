@@ -18,21 +18,21 @@ const unitSymbolMap = {
 export function WeatherCard({ weather, loading, error, onRefresh, units = 'metric' }) {
     if (loading && !weather) {
         return (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
-                <div className="mb-4 h-6 w-40 animate-pulse rounded-full bg-white/10" />
-                <div className="mb-4 h-24 animate-pulse rounded-3xl bg-white/10" />
-                <div className="h-6 w-56 animate-pulse rounded-full bg-white/10" />
+            <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-6 md:p-8 shadow-2xl backdrop-blur">
+                <div className="mb-3 sm:mb-4 h-5 sm:h-6 w-32 sm:w-40 animate-pulse rounded-full bg-white/10" />
+                <div className="mb-3 sm:mb-4 h-20 sm:h-24 animate-pulse rounded-2xl sm:rounded-3xl bg-white/10" />
+                <div className="h-5 sm:h-6 w-44 sm:w-56 animate-pulse rounded-full bg-white/10" />
             </div>
         );
     }
 
     if (error && !weather) {
         return (
-            <div className="rounded-3xl border border-red-500/40 bg-red-500/10 p-8 text-center text-red-50 backdrop-blur">
-                <p className="mb-4 text-lg font-semibold">❌ { error }</p>
+            <div className="rounded-2xl sm:rounded-3xl border border-red-500/40 bg-red-500/10 p-4 sm:p-6 md:p-8 text-center text-red-50 backdrop-blur">
+                <p className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold">❌ { error }</p>
                 <button
                     onClick={ onRefresh }
-                    className="rounded-2xl bg-red-500/80 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-red-500 hover:shadow-xl"
+                    className="rounded-xl sm:rounded-2xl bg-red-500/80 px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-lg transition-all hover:bg-red-500 hover:shadow-xl"
                 >
                     Thử lại
                 </button>
@@ -42,8 +42,8 @@ export function WeatherCard({ weather, loading, error, onRefresh, units = 'metri
 
     if (!weather) {
         return (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-slate-200 backdrop-blur">
-                <p>Không có dữ liệu thời tiết. Vui lòng thử làm mới.</p>
+            <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-6 md:p-8 text-center text-slate-200 backdrop-blur">
+                <p className="text-sm sm:text-base">Không có dữ liệu thời tiết. Vui lòng thử làm mới.</p>
             </div>
         );
     }
@@ -133,88 +133,88 @@ export function WeatherCard({ weather, loading, error, onRefresh, units = 'metri
     ];
 
     return (
-        <div className="relative overflow-hidden rounded-[32px] border border-white/20 bg-gradient-to-br from-slate-900/80 to-slate-800/60 p-8 shadow-2xl backdrop-blur-xl">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-[32px] border border-white/20 bg-gradient-to-br from-slate-900/80 to-slate-800/60 p-4 sm:p-6 md:p-8 shadow-2xl backdrop-blur-xl">
             <div className="pointer-events-none absolute -top-20 -right-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-            <div className="relative z-10 space-y-8">
-                <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative z-10 space-y-4 sm:space-y-6 md:space-y-8">
+                <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                        <p className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500/30 to-cyan-500/30 px-4 py-1.5 text-xs uppercase tracking-[0.3em] text-cyan-200 border border-cyan-400/30">
-                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        <p className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-blue-500/30 to-cyan-500/30 px-3 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] text-cyan-200 border border-cyan-400/30">
+                            <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-cyan-400 animate-pulse"></span>
                             Thời gian địa phương · { localTime }
                         </p>
-                        <h2 className="mt-2 text-4xl font-semibold text-white md:text-5xl">
+                        <h2 className="mt-1.5 sm:mt-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-white">
                             { name }
                         </h2>
-                        <p className="mt-2 text-lg capitalize text-slate-200">
+                        <p className="mt-1.5 sm:mt-2 text-base sm:text-lg capitalize text-slate-200">
                             { description }
                         </p>
                     </div>
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-[minmax(0,220px)_1fr] md:items-center">
-                    <div className="flex flex-col items-center gap-3">
+                <div className="grid gap-4 sm:gap-6 md:grid-cols-[minmax(0,200px)_1fr] md:items-center">
+                    <div className="flex flex-col items-center gap-2 sm:gap-3">
                         <img
                             src={ iconUrl }
                             alt={ description }
-                            className="w-36 drop-shadow-[0_25px_45px_rgba(0,0,0,0.35)]"
+                            className="w-28 sm:w-32 md:w-36 drop-shadow-[0_25px_45px_rgba(0,0,0,0.35)]"
                         />
                         <div className="text-center">
-                            <div className="text-6xl font-light text-white md:text-7xl">
+                            <div className="text-5xl sm:text-6xl md:text-7xl font-light text-white">
                                 { temp }
-                                <span className="ml-1 text-3xl text-slate-200">{ unitSymbol }</span>
+                                <span className="ml-1 text-2xl sm:text-3xl text-slate-200">{ unitSymbol }</span>
                             </div>
-                            <p className="mt-2 text-sm text-slate-200">
+                            <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-slate-200">
                                 Cảm giác như <span className="font-semibold text-white">{ feelsLike }{ unitSymbol }</span>
                             </p>
                         </div>
                     </div>
 
-                    <div className="space-y-6">
-                        <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-4 sm:space-y-6">
+                        <div className="grid gap-3 sm:gap-4 grid-cols-2">
                             { highlightCards.map(({ label, value, Icon, extra }) => (
                                 <div
                                     key={ label }
-                                    className="rounded-3xl border border-white/15 bg-gradient-to-br from-slate-800/90 to-slate-900/70 p-4 text-slate-100 shadow-lg backdrop-blur-md hover:border-blue-400/30 transition-all duration-300"
+                                    className="rounded-2xl sm:rounded-3xl border border-white/15 bg-gradient-to-br from-slate-800/90 to-slate-900/70 p-3 sm:p-4 text-slate-100 shadow-lg backdrop-blur-md hover:border-blue-400/30 transition-all duration-300"
                                 >
-                                    <div className="flex items-center gap-3 text-sm text-slate-300">
-                                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
-                                            <Icon className="h-5 w-5" />
+                                    <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-300">
+                                        <span className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl bg-white/10">
+                                            <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                                         </span>
-                                        <span className="uppercase tracking-wide">{ label }</span>
+                                        <span className="uppercase tracking-wide text-[10px] sm:text-xs">{ label }</span>
                                     </div>
-                                    <p className="mt-3 text-2xl font-semibold text-white">
+                                    <p className="mt-2 sm:mt-3 text-xl sm:text-2xl font-semibold text-white">
                                         { value }
                                     </p>
                                     { extra && (
-                                        <p className="mt-1 text-sm text-slate-300">{ extra }</p>
+                                        <p className="mt-1 text-xs sm:text-sm text-slate-300">{ extra }</p>
                                     ) }
                                 </div>
                             )) }
                         </div>
 
-                        <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-5 backdrop-blur-md">
-                            <div className="mb-4 flex items-center justify-between">
-                                <h3 className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-amber-200">
-                                    <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                        <div className="rounded-2xl sm:rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-4 sm:p-5 backdrop-blur-md">
+                            <div className="mb-3 sm:mb-4 flex items-center justify-between">
+                                <h3 className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold uppercase tracking-wide text-amber-200">
+                                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400"></span>
                                     Chu kỳ mặt trời
                                 </h3>
-                                <span className="text-xs text-slate-400">Theo giờ địa phương</span>
+                                <span className="text-[10px] sm:text-xs text-slate-400">Theo giờ địa phương</span>
                             </div>
-                            <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="grid gap-3 sm:gap-4 grid-cols-2">
                                 { sunTimeline.map(({ label, value, Icon }) => (
                                     <div
                                         key={ label }
-                                        className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+                                        className="flex items-center justify-between rounded-xl sm:rounded-2xl border border-white/10 bg-white/5 px-3 sm:px-4 py-2.5 sm:py-3"
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
-                                                <Icon className="h-5 w-5" />
+                                        <div className="flex items-center gap-2 sm:gap-3">
+                                            <span className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl bg-white/10">
+                                                <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                                             </span>
                                             <div>
-                                                <p className="text-xs uppercase tracking-wide text-slate-300">
+                                                <p className="text-[10px] sm:text-xs uppercase tracking-wide text-slate-300">
                                                     { label }
                                                 </p>
-                                                <p className="text-lg font-semibold text-white">
+                                                <p className="text-base sm:text-lg font-semibold text-white">
                                                     { value }
                                                 </p>
                                             </div>
