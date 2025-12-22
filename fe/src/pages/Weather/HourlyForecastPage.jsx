@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../configs/apiClient';
 import { getCity, getUnits } from '../../utils/storage';
+import { useLocationImages } from '../../hooks/useLocationImages';
 import { ChevronLeft, ChevronRight, Calendar, Cloud, Droplets, Wind, Thermometer } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -15,6 +16,21 @@ export function HourlyForecastPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [limit] = useState(24);
+
+  // Get location images with caching
+  const { images: backgroundImages } = useLocationImages(city);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Auto-rotate background images every 10 seconds
+  useEffect(() => {
+    if (backgroundImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % backgroundImages.length);
+      setImageLoaded(false);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [backgroundImages.length]);
 
   useEffect(() => {
     loadForecast();
@@ -68,104 +84,134 @@ export function HourlyForecastPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-8">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Dự báo theo giờ - { city }</h1>
-            <p className="text-slate-400">Xem chi tiết thời tiết từng giờ</p>
-          </div>
-          <button
-            onClick={ () => navigate('/weather') }
-            className="rounded-full border border-white/20 px-4 py-2 text-sm hover:bg-white/10 transition"
-          >
-            ← Quay lại
-          </button>
-        </div>
+  const hasBackgroundImage = backgroundImages.length > 0;
+  const currentBgImage = hasBackgroundImage ? backgroundImages[currentImageIndex] : null;
 
-        { forecast && forecast.list && forecast.list.length > 0 && (
-          <>
-            <div className="grid gap-4 mb-6">
-              { forecast.list.map((item, index) => (
-                <div
-                  key={ index }
-                  className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur hover:bg-white/10 transition"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="text-center min-w-[80px]">
-                        <p className="text-xs text-slate-400">{ formatDate(item.dt) }</p>
-                        <p className="text-lg font-semibold">{ formatTime(item.dt) }</p>
+  return (
+    <div className="relative min-h-screen overflow-hidden text-slate-100">
+      {/* Background Layer */ }
+      { hasBackgroundImage ? (
+        <>
+          <div
+            className="fixed inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+            style={ {
+              backgroundImage: `url(${currentBgImage})`,
+              opacity: imageLoaded ? 1 : 0,
+            } }
+          />
+          <img
+            src={ currentBgImage }
+            alt=""
+            className="hidden"
+            onLoad={ () => setImageLoaded(true) }
+          />
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-[2px]" />
+        </>
+      ) : (
+        <>
+          <div className="fixed inset-0 bg-slate-950" />
+          <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.35),transparent_55%)]" />
+        </>
+      ) }
+
+      <div className="relative z-10 py-8">
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Dự báo theo giờ - { city }</h1>
+              <p className="text-slate-400">Xem chi tiết thời tiết từng giờ</p>
+            </div>
+            <button
+              onClick={ () => navigate('/weather') }
+              className="rounded-full border border-white/30 bg-slate-800/80 backdrop-blur-md px-4 py-2 text-sm hover:bg-slate-700/80 transition shadow-lg"
+            >
+              ← Quay lại
+            </button>
+          </div>
+
+          { forecast && forecast.list && forecast.list.length > 0 && (
+            <>
+              <div className="grid gap-4 mb-6">
+                { forecast.list.map((item, index) => (
+                  <div
+                    key={ index }
+                    className="rounded-2xl border border-white/30 bg-slate-900/85 backdrop-blur-xl p-4 shadow-2xl hover:bg-slate-800/90 hover:border-white/40 transition-all duration-300"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="text-center min-w-[80px]">
+                          <p className="text-xs text-slate-400">{ formatDate(item.dt) }</p>
+                          <p className="text-lg font-semibold">{ formatTime(item.dt) }</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          { item.weather && item.weather[0] && (
+                            <img
+                              src={ `https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png` }
+                              alt={ item.weather[0].description }
+                              className="w-12 h-12"
+                            />
+                          ) }
+                          <div>
+                            <p className="text-2xl font-bold">
+                              { Math.round(item.main.temp) }°{ units === 'metric' ? 'C' : 'F' }
+                            </p>
+                            <p className="text-sm text-slate-400 capitalize">
+                              { item.weather?.[0]?.description || 'N/A' }
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        { item.weather && item.weather[0] && (
-                          <img
-                            src={ `https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png` }
-                            alt={ item.weather[0].description }
-                            className="w-12 h-12"
-                          />
-                        ) }
-                        <div>
-                          <p className="text-2xl font-bold">
-                            { Math.round(item.main.temp) }°{ units === 'metric' ? 'C' : 'F' }
-                          </p>
-                          <p className="text-sm text-slate-400 capitalize">
-                            { item.weather?.[0]?.description || 'N/A' }
-                          </p>
+                      <div className="grid grid-cols-4 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Thermometer className="h-4 w-4 text-orange-400" />
+                          <span>Cảm giác: { Math.round(item.main.feels_like) }°</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Droplets className="h-4 w-4 text-blue-400" />
+                          <span>Độ ẩm: { item.main.humidity }%</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Wind className="h-4 w-4 text-slate-400" />
+                          <span>Gió: { item.wind.speed.toFixed(1) } m/s</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Cloud className="h-4 w-4 text-slate-400" />
+                          <span>Mưa: { (item.pop * 100).toFixed(0) }%</span>
                         </div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Thermometer className="h-4 w-4 text-orange-400" />
-                        <span>Cảm giác: { Math.round(item.main.feels_like) }°</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Droplets className="h-4 w-4 text-blue-400" />
-                        <span>Độ ẩm: { item.main.humidity }%</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Wind className="h-4 w-4 text-slate-400" />
-                        <span>Gió: { item.wind.speed.toFixed(1) } m/s</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Cloud className="h-4 w-4 text-slate-400" />
-                        <span>Mưa: { (item.pop * 100).toFixed(0) }%</span>
-                      </div>
-                    </div>
                   </div>
-                </div>
-              )) }
-            </div>
-
-            { forecast.pagination && forecast.pagination.totalPages > 1 && (
-              <div className="flex items-center justify-center gap-4 mt-8">
-                <button
-                  onClick={ () => handlePageChange(page - 1) }
-                  disabled={ page === 1 }
-                  className="flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm hover:bg-white/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Trước
-                </button>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-400">
-                    Trang { page } / { forecast.pagination.totalPages }
-                  </span>
-                </div>
-                <button
-                  onClick={ () => handlePageChange(page + 1) }
-                  disabled={ page >= forecast.pagination.totalPages }
-                  className="flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm hover:bg-white/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Sau
-                  <ChevronRight className="h-4 w-4" />
-                </button>
+                )) }
               </div>
-            ) }
-          </>
-        ) }
+
+              { forecast.pagination && forecast.pagination.totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-8">
+                  <button
+                    onClick={ () => handlePageChange(page - 1) }
+                    disabled={ page === 1 }
+                    className="flex items-center gap-2 rounded-full border border-white/30 bg-slate-800/80 backdrop-blur-md px-4 py-2 text-sm hover:bg-slate-700/80 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Trước
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-400">
+                      Trang { page } / { forecast.pagination.totalPages }
+                    </span>
+                  </div>
+                  <button
+                    onClick={ () => handlePageChange(page + 1) }
+                    disabled={ page >= forecast.pagination.totalPages }
+                    className="flex items-center gap-2 rounded-full border border-white/30 bg-slate-800/80 backdrop-blur-md px-4 py-2 text-sm hover:bg-slate-700/80 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Sau
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              ) }
+            </>
+          ) }
+        </div>
       </div>
     </div>
   );
