@@ -3,6 +3,7 @@ import { useWeather } from '../../hooks/useWeather';
 import { useOffline } from '../../hooks/useOffline';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useInstallPrompt } from '../../hooks/useInstallPrompt';
+import { useLocationImages } from '../../hooks/useLocationImages';
 import { WeatherCard } from '../../components/WeatherCard';
 import { ForecastCard } from '../../components/ForecastCard';
 import { OfflineBanner } from '../../components/OfflineBanner';
@@ -11,7 +12,6 @@ import { UpdatePrompt } from '../../components/UpdatePrompt';
 import { ChatOverlay } from '../../components/ChatOverlay';
 import { registerSW } from 'virtual:pwa-register';
 import { initDB } from '../../services/dbService';
-import { getLocationByName } from '../../services/locationService';
 import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 import {
@@ -56,8 +56,13 @@ export function WeatherPage() {
   const [showUpdate, setShowUpdate] = useState(false);
   const [syncStatus, setSyncStatus] = useState('idle'); // idle | queued | completed
 
-  // Background images state
-  const [backgroundImages, setBackgroundImages] = useState([]);
+  // Get location name early for the hook
+  const locationName = weather?.name || city;
+
+  // Use location images hook with caching
+  const { images: backgroundImages, loading: imagesLoading } = useLocationImages(locationName);
+
+  // Image rotation state
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -72,7 +77,6 @@ export function WeatherPage() {
     minute: '2-digit',
   });
 
-  const locationName = weather?.name || city;
   const weatherSummary = weather?.weather?.[0]?.description;
   const timezoneOffset = weather?.timezone ?? 0;
   const localUpdated = weather
@@ -126,29 +130,6 @@ export function WeatherPage() {
         : 'bg-purple-500/20 text-purple-200',
     },
   ];
-
-  // Fetch location images when city changes
-  useEffect(() => {
-    const fetchLocationImages = async () => {
-      if (!locationName) return;
-
-      try {
-        const location = await getLocationByName(locationName);
-        if (location && location.images && Array.isArray(location.images) && location.images.length > 0) {
-          setBackgroundImages(location.images);
-          setCurrentImageIndex(0);
-          setImageLoaded(false);
-        } else {
-          setBackgroundImages([]);
-        }
-      } catch (err) {
-        console.error('Error fetching location images:', err);
-        setBackgroundImages([]);
-      }
-    };
-
-    fetchLocationImages();
-  }, [locationName]);
 
   // Auto-rotate background images every 10 seconds
   useEffect(() => {
@@ -441,30 +422,17 @@ export function WeatherPage() {
               </div>
             </div>
 
-            <NotificationSettings
-              permission={ notificationPermission }
-              onRequestPermission={ askPermission }
-              onSendPush={ sendTestPush }
-            />
 
-            <div className="rounded-3xl border border-white/20 bg-slate-900/70 p-6 shadow-2xl backdrop-blur-xl">
-              <div className="mb-4 flex items-center justify-between text-sm text-slate-300">
-                <p>
-                  Truy cập lần cuối: { lastUpdated } — trình duyệt { navigator.userAgentData?.brands?.[0]?.brand || navigator.userAgent || '' }
-                </p>
-                <button
-                  type="button"
-                  onClick={ handleInstall }
-                  className="hidden rounded-xl border border-white/20 px-3 py-1 text-xs text-white/80 hover:border-white/40 hover:text-white md:inline-flex"
-                >
-                  Tự cài đặt
-                </button>
-              </div>
-            </div>
+
           </div>
         </section>
 
-        <ForecastCard forecast={ forecast } loading={ loading } units={ units } />
+        <ForecastCard
+          forecast={ forecast }
+          loading={ loading }
+          units={ units }
+          backgroundImage={ hasBackgroundImage ? currentBgImage : null }
+        />
 
         <footer className="border-t border-white/10 py-6 text-center text-sm text-slate-400">
           <p className="mb-2">
