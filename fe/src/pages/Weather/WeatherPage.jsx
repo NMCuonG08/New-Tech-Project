@@ -421,12 +421,8 @@ export function WeatherPage() {
                 }) }
               </div>
             </div>
-
-
-
           </div>
         </section>
-
         <ForecastCard
           forecast={ forecast }
           loading={ loading }

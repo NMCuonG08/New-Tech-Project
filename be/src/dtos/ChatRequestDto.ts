@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, MinLength } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, MinLength, ValidateIf } from "class-validator";
 import { Transform, Type } from "class-transformer";
 
 export class ChatRequestDto {
@@ -13,13 +13,15 @@ export class ChatRequestDto {
   })
   message!: string;
 
-  @IsOptional()
-  @IsString()
   @Transform(({ value }) => {
+    // If no value provided, return undefined to let backend generate UUID
     if (value === undefined || value === null || value === "") {
-      return "default-session";
+      return undefined;
     }
     return typeof value === "string" ? value.trim() : value;
   })
+  @IsOptional()
+  @ValidateIf((o) => o.sessionId !== undefined && o.sessionId !== null && o.sessionId !== "")
+  @IsString()
   sessionId?: string;
 }

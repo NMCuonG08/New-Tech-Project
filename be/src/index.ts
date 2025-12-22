@@ -11,6 +11,7 @@ import favoriteRoutes from "./routes/favoriteRoutes";
 import alertRoutes from "./routes/alertRoutes";
 import noteRoutes from "./routes/noteRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
+import chatRoutes from "./routes/chat.routes";
 import { seedAdminUser } from "./seeds/adminSeed";
 import dotenv from "dotenv";
 import session from "express-session";
@@ -62,6 +63,7 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/notes", noteRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/chat", chatRoutes);
 AppDataSource.initialize()
   .then(async () => {
     console.log("Data Source has been initialized");

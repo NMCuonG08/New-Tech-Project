@@ -1,24 +1,77 @@
 // Chat Utilities
 
 /**
- * Generate unique session ID
- * @returns {string} Session ID
+ * Generate UUID v4
+ * @returns {string} UUID
  */
-export function generateSessionId() {
-    return `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+export function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 }
 
 /**
- * Get or create session ID from localStorage
+ * Generate unique session ID (for backward compatibility)
+ * @returns {string} Session ID
+ */
+export function generateSessionId() {
+    return generateUUID();
+}
+
+/**
+ * Get current active session ID from localStorage
+ * @returns {string|null} Current session ID
+ */
+export function getCurrentSessionId() {
+    return localStorage.getItem('chat-current-session');
+}
+
+/**
+ * Set current active session ID
+ * @param {string} sessionId - Session ID to set as current
+ */
+export function setCurrentSessionId(sessionId) {
+    localStorage.setItem('chat-current-session', sessionId);
+}
+
+/**
+ * Get all sessions from localStorage (as backup/cache)
+ * @returns {Array} Array of session objects
+ */
+export function getAllSessions() {
+    try {
+        const sessionsJson = localStorage.getItem('chat-sessions');
+        return sessionsJson ? JSON.parse(sessionsJson) : [];
+    } catch (error) {
+        console.error('Error parsing sessions from localStorage:', error);
+        return [];
+    }
+}
+
+/**
+ * Save sessions to localStorage
+ * @param {Array} sessions - Array of session objects
+ */
+export function saveSessions(sessions) {
+    try {
+        localStorage.setItem('chat-sessions', JSON.stringify(sessions));
+    } catch (error) {
+        console.error('Error saving sessions to localStorage:', error);
+    }
+}
+
+/**
+ * Get or create session ID from localStorage (legacy support)
  * @returns {string} Session ID
  */
 export function getOrCreateSessionId() {
-    const key = 'chat-session-id';
-    let sessionId = localStorage.getItem(key);
+    let sessionId = getCurrentSessionId();
 
     if (!sessionId) {
-        sessionId = generateSessionId();
-        localStorage.setItem(key, sessionId);
+        sessionId = generateUUID();
+        setCurrentSessionId(sessionId);
     }
 
     return sessionId;

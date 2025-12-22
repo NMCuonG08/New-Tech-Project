@@ -65,6 +65,12 @@ export function validateDto<T extends object>(
           };
         });
 
+        console.error("❌ Validation failed:", {
+          source,
+          data,
+          errors: formattedErrors
+        });
+
         return res.status(400).json({
           success: false,
           error: "Validation failed",

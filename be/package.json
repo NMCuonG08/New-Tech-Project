@@ -31,7 +31,8 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.28"
+    "typeorm": "^0.3.28",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -40,6 +41,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.1",
     "@types/passport-google-oauth20": "^2.0.17",
+    "@types/uuid": "^10.0.0",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",

@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Favorite } from "./Favorite";
 import { Alert } from "./Alert";
 import { Note } from "./Note";
+import { ChatSession } from "./ChatSession";
 
 export enum UserRole {
   USER = "user",
@@ -46,4 +47,7 @@ export class User {
 
   @OneToMany(() => Note, (note) => note.user)
   notes!: Note[];
+
+  @OneToMany(() => ChatSession, (session) => session.user)
+  chatSessions!: ChatSession[];
 }
