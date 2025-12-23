@@ -13,36 +13,21 @@ export const chat = async (req: Request, res: Response) => {
     // Extract user ID from JWT token if authenticated
     const userId = (req as any).user?.id;
     
-    console.log("🔍 Chat request:", {
-      hasToken: !!req.headers.authorization,
-      userId,
-      sessionIdFromClient: dto.sessionId,
-      isAnonymous: !userId
-    });
 
-    // Get or create session
     const session = await sessionManager.getOrCreateSession(
       dto.sessionId,
       userId
     );
-    
-    console.log("✅ Session created/retrieved:", {
-      sessionId: session.id,
-      userId: session.userId,
-      isAnonymous: session.isAnonymous
-    });
 
-    // Save user message to database
+
     await sessionManager.saveMessage(
       session.id,
       MessageRole.USER,
       dto.message
     );
 
-    // Call AI service
     const result = await aiClient.chat(dto.message, session.id);
 
-    // Save AI response to database
     await sessionManager.saveMessage(
       session.id,
       MessageRole.ASSISTANT,

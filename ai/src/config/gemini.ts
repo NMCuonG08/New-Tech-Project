@@ -7,9 +7,8 @@ if (!ENV.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(ENV.GEMINI_API_KEY as string);
 
-// Use Gemini 1.5 Pro for best results
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: "gemma-3-12b-it", //gemini-2.5-flash-lite  //gemma-3-12b-it
   generationConfig: {
     temperature: 0.7,
     topK: 40,

@@ -180,7 +180,7 @@ const INTENT_DEFINITIONS = {
 
 export { INTENT_DEFINITIONS };
 
-import { model } from "../config/gemini";
+import { model } from "../config/groq";
 
 class IntentClassifier {
   model: any;

@@ -13,7 +13,7 @@ export const chat = async (req: Request, res: Response) => {
     // Process the query
     const result = await aiService.processQuery(
       dto.message,
-      dto.sessionId || "default-session"
+      dto.sessionId
     );
 
     res.json(result);

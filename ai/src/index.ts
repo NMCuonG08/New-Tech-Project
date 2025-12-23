@@ -39,7 +39,7 @@ app.get("/health", (_req, res) => {
 app.use("/api/ai", aiRoutes);
 
 app.listen(ENV.PORT, () => {
-  console.log(`🤖 AI Service is running at http://localhost:${ENV.PORT}`);
-  console.log(`📡 API endpoints available at http://localhost:${ENV.PORT}/api/ai`);
+  console.log(` AI Service is running at http://localhost:${ENV.PORT}`);
+  console.log(` API endpoints available at http://localhost:${ENV.PORT}/api/ai`);
 });
 

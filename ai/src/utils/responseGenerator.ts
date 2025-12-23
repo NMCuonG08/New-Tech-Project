@@ -1,6 +1,6 @@
 // src/utils/responseGenerator.js
 
-import { model } from "../config/gemini";
+import { model } from "../config/groq";
 
 class ResponseGenerator {
   model: any;

@@ -1,6 +1,6 @@
 // src/utils/parameterExtractor.js
 
-import { model } from "../config/gemini";
+import { model } from "../config/groq";
 
 class ParameterExtractor {
   model: any;

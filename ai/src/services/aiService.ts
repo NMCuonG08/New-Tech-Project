@@ -59,20 +59,35 @@ class AIService {
         userInput,
         contextSummary
       );
-      console.log(
-        `✅ Intent: ${intentResult.intent} (confidence: ${intentResult.confidence})`
-      );
 
-      // Step 3: Handle special intents (GENERAL_CHAT, CLARIFICATION)
+
       if (intentResult.intent === "GENERAL_CHAT") {
-        return this.handleGeneralChat(userInput);
+        const result = this.handleGeneralChat(userInput);
+        // ✅ FIX: Update context before returning
+        this.contextService.updateContext(
+          sessionId,
+          userInput,
+          intentResult.intent,
+          {}, // No parameters for general chat
+          result.response
+        );
+        return result;
       }
 
       if (
         intentResult.intent === "CLARIFICATION" &&
         intentResult.confidence < 0.5
       ) {
-        return this.handleClarification(userInput, contextSummary);
+        const result = this.handleClarification(userInput, contextSummary);
+        // ✅ FIX: Update context before returning
+        this.contextService.updateContext(
+          sessionId,
+          userInput,
+          intentResult.intent,
+          {}, // No parameters for clarification
+          result.response
+        );
+        return result;
       }
 
       // Step 4: Extract parameters
