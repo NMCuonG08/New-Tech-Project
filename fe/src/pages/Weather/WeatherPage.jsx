@@ -56,11 +56,8 @@ export function WeatherPage() {
   const [showUpdate, setShowUpdate] = useState(false);
   const [syncStatus, setSyncStatus] = useState('idle'); // idle | queued | completed
 
-  // Get location name early for the hook
-  const locationName = weather?.name || city;
-
-  // Use location images hook with caching
-  const { images: backgroundImages, loading: imagesLoading } = useLocationImages(locationName);
+  // Use location images hook with caching - use city for stability
+  const { images: backgroundImages, loading: imagesLoading } = useLocationImages(city);
 
   // Image rotation state
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -78,6 +75,7 @@ export function WeatherPage() {
   });
 
   const weatherSummary = weather?.weather?.[0]?.description;
+  const locationName = weather?.name || city;
   const timezoneOffset = weather?.timezone ?? 0;
   const localUpdated = weather
     ? new Date((weather.dt + timezoneOffset) * 1000)
@@ -226,7 +224,14 @@ export function WeatherPage() {
   return (
     <div className="relative min-h-screen overflow-hidden text-slate-100">
       {/* Background Layer */ }
-      { hasBackgroundImage ? (
+
+      {/* Always render base gradient background ensures no blinking */ }
+      <div className="fixed inset-0 bg-slate-950" />
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.35),transparent_55%)]" />
+      <div className="fixed -top-40 -right-24 h-96 w-96 rounded-full bg-purple-500/30 blur-[120px]" />
+      <div className="fixed -bottom-40 -left-24 h-80 w-80 rounded-full bg-blue-500/30 blur-[100px]" />
+
+      { hasBackgroundImage && (
         <>
           {/* Fullscreen Background Image */ }
           <div
@@ -242,17 +247,13 @@ export function WeatherPage() {
             alt=""
             className="hidden"
             onLoad={ () => setImageLoaded(true) }
+            onError={ () => setImageLoaded(false) }
           />
-          {/* Dark overlay for better readability */ }
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px]" />
-        </>
-      ) : (
-        <>
-          {/* Default gradient background */ }
-          <div className="fixed inset-0 bg-slate-950" />
-          <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.35),transparent_55%)]" />
-          <div className="fixed -top-40 -right-24 h-96 w-96 rounded-full bg-purple-500/30 blur-[120px]" />
-          <div className="fixed -bottom-40 -left-24 h-80 w-80 rounded-full bg-blue-500/30 blur-[100px]" />
+          {/* Dark overlay for better readability - only shows when image is loaded to preserve gradient brightness */ }
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-[2px] transition-opacity duration-1000"
+            style={ { opacity: imageLoaded ? 1 : 0 } }
+          />
         </>
       ) }
 
