@@ -12,14 +12,14 @@ const groq = new Groq({
 
 // Configuration for consistency with previous Gemini setup
 const MODEL_CONFIG = {
-  model: "llama-3.3-70b-versatile", // Fast and capable model
+  model: "llama-3.3-70b-versatile", 
   temperature: 0.7,
   max_tokens: 2048,
   top_p: 0.95,
 };
 
 /**
- * Generate content using Groq API (compatible with Gemini interface)
+ * Generate content using Groq API 
  */
 export async function generateContent(prompt: string): Promise<any> {
   try {
