@@ -51,6 +51,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - OPEN_METEO_BASE_URL=https://api.open-meteo.com/v1
       - OPEN_METEO_ARCHIVE_URL=https://archive-api.open-meteo.com/v1
+      - BACKEND_URL=http://backend:3000
     depends_on:
       mysql:
         condition: service_healthy
