@@ -1,6 +1,8 @@
 import { AppDataSource } from "../data-source";
 import { ChatSession } from "../entities/ChatSession";
 
+import { DeepPartial } from "typeorm";
+
 export const ChatSessionRepository = AppDataSource.getRepository(
   ChatSession
 ).extend({
@@ -19,12 +21,17 @@ export const ChatSessionRepository = AppDataSource.getRepository(
     });
   },
 
-  async createSession(sessionId: string, userId?: number) {
-    const session = this.create({
+  async createSession(sessionId: string, userId?: number): Promise<ChatSession> {
+    const sessionData: DeepPartial<ChatSession> = {
       id: sessionId,
-      userId,
       isAnonymous: !userId,
-    });
+    };
+    
+    if (userId !== undefined) {
+      sessionData.userId = userId;
+    }
+
+    const session = this.create(sessionData);
     return this.save(session);
   },
 });
