@@ -1,7 +1,7 @@
 // Chat Overlay Component - Icon floating và Chat Box
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, ArrowDown } from 'lucide-react';
 import { useChat } from '../hooks/useChat';
 import { useSessionManager } from '../hooks/useSessionManager';
 import { SessionHistory } from './SessionHistory';
@@ -11,6 +11,8 @@ export function ChatOverlay() {
     const [isOpen, setIsOpen] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const inputRef = useRef(null);
+    const messagesContainerRef = useRef(null);
+    const [showScrollButton, setShowScrollButton] = useState(false);
 
     // Session management
     const {
@@ -42,6 +44,18 @@ export function ChatOverlay() {
             switchToSession(currentSessionId);
         }
     }, [currentSessionId, switchToSession]);
+
+    const handleScroll = () => {
+        if (messagesContainerRef.current) {
+            const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+            setShowScrollButton(!isNearBottom);
+        }
+    };
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     // Handle send message
     const handleSend = async (e) => {
@@ -133,7 +147,11 @@ export function ChatOverlay() {
                     </div>
 
                     {/* Messages Container */ }
-                    <div className="flex-1 overflow-y-auto px-4 py-4">
+                    <div
+                        ref={ messagesContainerRef }
+                        onScroll={ handleScroll }
+                        className="flex-1 overflow-y-auto px-4 py-4 scroll-smooth"
+                    >
                         { messages.length === 0 ? (
                             <div className="flex h-full items-center justify-center">
                                 <div className="text-center">
@@ -182,6 +200,17 @@ export function ChatOverlay() {
                             </div>
                         ) }
                     </div>
+
+                    {/* Scroll Bottom Button */ }
+                    { showScrollButton && (
+                        <button
+                            onClick={ scrollToBottom }
+                            className="absolute bottom-20 right-1/2 translate-x-1/2 sm:translate-x-0 sm:right-6 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-700/80 text-slate-200 shadow-lg backdrop-blur-sm border border-white/10 hover:bg-slate-600 transition-all duration-300 animate-in fade-in zoom-in"
+                            aria-label="Scroll to bottom"
+                        >
+                            <ArrowDown className="h-4 w-4" />
+                        </button>
+                    ) }
 
                     {/* Input Form */ }
                     <form onSubmit={ handleSend } className="border-t border-white/10 p-4">

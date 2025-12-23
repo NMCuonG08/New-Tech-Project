@@ -1,4 +1,6 @@
 import axios from "axios";
+import { AppDataSource } from "../data-source";
+import { Location } from "../entities/Location";
 
 const OPEN_METEO_API = "https://api.open-meteo.com/v1/forecast";
 const OPEN_METEO_GEOCODING_API = "https://geocoding-api.open-meteo.com/v1/search";
@@ -99,6 +101,31 @@ function mapWeatherCodeToCondition(code: number, isDay: number = 1) {
 }
 
 async function geocodeCity(cityName: string) {
+  // 1. Try to find in DB first
+  try {
+    if (AppDataSource.isInitialized) {
+      const locationRepository = AppDataSource.getRepository(Location);
+      const location = await locationRepository.findOne({
+        where: { name: cityName }
+      });
+
+      if (location && location.lat && location.lon) {
+        console.log(`[WeatherService] Found ${cityName} in database`);
+        return {
+          name: location.name,
+          country: location.countryCode || "VN",
+          lat: location.lat,
+          lon: location.lon,
+          timezone: location.timezone || "Asia/Ho_Chi_Minh",
+        };
+      }
+    }
+  } catch (error) {
+    console.warn(`[WeatherService] DB lookup failed for ${cityName}:`, error);
+  }
+
+  // 2. Fallback to OpenMeteo API
+  console.log(`[WeatherService] Fetching ${cityName} from API`);
   const params = new URLSearchParams({
     name: cityName,
     count: "1",

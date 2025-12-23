@@ -60,6 +60,11 @@ class AIService {
         contextSummary
       );
 
+      if (intentResult.intent === "EXTREME_EVENTS") {
+        console.log("🔥 EXTREME_EVENTS Flow Triggered");
+        console.log("Intent Result:", JSON.stringify(intentResult, null, 2));
+      }
+
 
       if (intentResult.intent === "GENERAL_CHAT") {
         const result = this.handleGeneralChat(userInput);
@@ -192,7 +197,16 @@ class AIService {
 
       case "TREND_ANALYSIS":
       case "EXTREME_EVENTS":
+        if (intent === "EXTREME_EVENTS") {
+          console.log("🌩️ Fetching data for EXTREME_EVENTS");
+          console.log("Parameters:", JSON.stringify(parameters, null, 2));
+        }
       case "STATISTICAL_INFO":
+        // Check if dates are in the future
+        const isFuture = new Date(date_start) >= new Date(new Date().setHours(0,0,0,0));
+        if (isFuture) {
+           return await this.fetchForecast(locations, date_start, date_end);
+        }
         return await this.fetchHistorical(locations, date_start, date_end);
 
       case "RECOMMENDATION":
@@ -239,6 +253,8 @@ class AIService {
     const end = new Date(endDate);
     const days =
       Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    console.log(`🔮 Fetching forecast for days: ${days} (Start: ${startDate}, End: ${endDate})`);
 
     for (const location of locations) {
       try {
@@ -321,6 +337,7 @@ class AIService {
         return this.analyzeTrend(weatherData);
 
       case "EXTREME_EVENTS":
+        console.log("📊 Analyzing data for EXTREME_EVENTS");
         return this.analyzeExtremes(weatherData);
 
       case "STATISTICAL_INFO":
@@ -512,11 +529,24 @@ class AIService {
   }
 
   analyzeExtremes(weatherData: WeatherData): any {
+    console.log("🔍 Inside analyzeExtremes");
+    console.log("Weather Data Keys:", Object.keys(weatherData));
     const city = Object.keys(weatherData)[0];
-    if (!city) return { error: "No city data available" };
+    if (!city) {
+      console.log("❌ No city found in weatherData");
+      return { error: "No city data available" };
+    }
     const data = weatherData[city];
+    console.log(`Weather Data for ${city}:`, data ? "Present" : "Missing");
+    if (data) {
+        console.log("Has daily:", !!data.daily);
+        if (data.error) console.log("Has error:", data.error);
+    }
 
-    if (!data.daily) return { error: "No daily data available" };
+    if (!data || !data.daily) {
+      console.error("❌ No daily data structure found");
+      return { error: "No daily data available" };
+    }
 
     const temps =
       data.daily.temperature_2m_max || data.daily.temperature_2m_mean || [];

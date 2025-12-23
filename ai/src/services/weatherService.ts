@@ -2,6 +2,8 @@
 
 import axios from "axios";
 
+import { ENV } from "../config/env";
+
 interface CityCoordinates {
   lat: number;
   lon: number;
@@ -12,6 +14,7 @@ class WeatherService {
   private baseURL: string;
   private archiveURL: string;
   private cityCoordinates: Record<string, CityCoordinates>;
+  private geocodingAPI: string;
 
   constructor() {
     this.baseURL =
@@ -19,34 +22,82 @@ class WeatherService {
     this.archiveURL =
       process.env.OPEN_METEO_ARCHIVE_URL ||
       "https://archive-api.open-meteo.com/v1";
+    this.geocodingAPI = "https://geocoding-api.open-meteo.com/v1/search";
 
-    // City coordinates database (expand this!)
-    this.cityCoordinates = {
-      hanoi: { lat: 21.0285, lon: 105.8542, name: "Hà Nội" },
-      "ha noi": { lat: 21.0285, lon: 105.8542, name: "Hà Nội" },
-      saigon: { lat: 10.8231, lon: 106.6297, name: "TP. Hồ Chí Minh" },
-      "ho chi minh": { lat: 10.8231, lon: 106.6297, name: "TP. Hồ Chí Minh" },
-      "sai gon": { lat: 10.8231, lon: 106.6297, name: "TP. Hồ Chí Minh" },
-      "da nang": { lat: 16.0544, lon: 108.2022, name: "Đà Nẵng" },
-      danang: { lat: 16.0544, lon: 108.2022, name: "Đà Nẵng" },
-      hue: { lat: 16.4637, lon: 107.5909, name: "Huế" },
-      "nha trang": { lat: 12.2388, lon: 109.1967, name: "Nha Trang" },
-      "da lat": { lat: 11.9404, lon: 108.4583, name: "Đà Lạt" },
-      dalat: { lat: 11.9404, lon: 108.4583, name: "Đà Lạt" },
-      "can tho": { lat: 10.0452, lon: 105.7469, name: "Cần Thơ" },
-      "hai phong": { lat: 20.8449, lon: 106.6881, name: "Hải Phòng" },
-    };
+    // Initial explicit cache is empty, we rely on DB/API
+    this.cityCoordinates = {};
   }
 
-  // Get coordinates for a city
-  getCoordinates(cityName: string): CityCoordinates | null {
+  // Get coordinates for a city (async)
+  async getCoordinates(cityName: string): Promise<CityCoordinates | null> {
     const normalized = cityName.toLowerCase().trim();
-    return this.cityCoordinates[normalized] || null;
+    
+    // 1. Check local cache first
+    if (this.cityCoordinates[normalized]) {
+      return this.cityCoordinates[normalized];
+    }
+
+    // 2. Try fetching from Backend Database (Priority)
+    try {
+      console.log(`🔌 Fetching location from Backend DB: ${cityName}`);
+      const response = await axios.get(`${ENV.BACKEND_URL}/api/locations/search`, {
+        params: { q: cityName },
+      });
+
+      if (response.data.success && response.data.data.length > 0) {
+        // Find best match (prefer exact match if possible, but search usually returns relevant first)
+        const bestMatch = response.data.data[0];
+      
+        
+        if (bestMatch.lat && bestMatch.lon) {
+           const coords: CityCoordinates = {
+            lat: Number(bestMatch.lat),
+            lon: Number(bestMatch.lon),
+            name: bestMatch.name,
+          };
+          this.cityCoordinates[normalized] = coords;
+          console.log(`✅ Found in DB: ${bestMatch.name}`);
+          return coords;
+        }
+      }
+    } catch (error) {
+       console.warn(`⚠️ Failed to fetch from Backend DB: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+
+    // 3. Fallback to OpenMeteo Geocoding API (for International or missing locations)
+    try {
+      console.log(`🌍 Geocoding fallback: ${cityName}`);
+      const response = await axios.get(this.geocodingAPI, {
+        params: {
+          name: cityName,
+          count: 1,
+          language: "vi",
+          format: "json",
+        },
+      });
+
+      if (response.data.results && response.data.results.length > 0) {
+        const result = response.data.results[0];
+        const coords: CityCoordinates = {
+          lat: result.latitude,
+          lon: result.longitude,
+          name: result.name,
+        };
+        
+        // Cache the result
+        this.cityCoordinates[normalized] = coords;
+        return coords;
+      }
+    } catch (error) {
+      console.error(`Geocoding failed for ${cityName}:`, error);
+    }
+
+    return null;
   }
 
   // Current weather
   async getCurrentWeather(city: string) {
-    const coords = this.getCoordinates(city);
+    const coords = await this.getCoordinates(city);
     if (!coords) {
       throw new Error(`City "${city}" not found`);
     }
@@ -85,7 +136,7 @@ class WeatherService {
 
   // Forecast (up to 16 days)
   async getForecast(city: string, days: number = 7) {
-    const coords = this.getCoordinates(city);
+    const coords = await this.getCoordinates(city);
     if (!coords) {
       throw new Error(`City "${city}" not found`);
     }
@@ -117,16 +168,19 @@ class WeatherService {
         daily: response.data.daily,
         timezone: response.data.timezone,
       };
-    } catch (error) {
+    } catch (error: any) {
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+        error.response?.data?.reason ||
+        error.message ||
+        "Unknown error";
+      console.error("Open-Meteo Forecast Error:", error.response?.data);
       throw new Error(`Failed to fetch forecast: ${errorMessage}`);
     }
   }
 
   // Historical weather
   async getHistoricalWeather(city: string, startDate: string, endDate: string) {
-    const coords = this.getCoordinates(city);
+    const coords = await this.getCoordinates(city);
     if (!coords) {
       throw new Error(`City "${city}" not found`);
     }
@@ -156,9 +210,12 @@ class WeatherService {
         daily: response.data.daily,
         period: { start: startDate, end: endDate },
       };
-    } catch (error) {
+    } catch (error: any) {
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+        error.response?.data?.reason ||
+        error.message ||
+        "Unknown error";
+       console.error("Open-Meteo API Error:", error.response?.data);
       throw new Error(`Failed to fetch historical weather: ${errorMessage}`);
     }
   }
