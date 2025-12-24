@@ -7,6 +7,7 @@ import { Alert } from "./entities/Alert";
 import { Note } from "./entities/Note";
 import { ChatSession } from "./entities/ChatSession";
 import { ChatMessage } from "./entities/ChatMessage";
+import { SystemAlert } from "./entities/SystemAlert";
 import { ENV } from "./config/env";
 
 export const AppDataSource = new DataSource({
@@ -18,7 +19,7 @@ export const AppDataSource = new DataSource({
   database: ENV.DB_NAME,
   synchronize: true, // Chỉ nên dùng cho môi trường dev
   logging: false,
-  entities: [User, Location, Favorite, Alert, Note, ChatSession, ChatMessage],
+  entities: [User, Location, Favorite, Alert, Note, ChatSession, ChatMessage, SystemAlert],
   migrations: [],
   subscribers: [],
 });

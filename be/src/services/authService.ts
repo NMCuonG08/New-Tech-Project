@@ -37,7 +37,7 @@ export class AuthService {
         role: user.role 
       }, 
       process.env.JWT_SECRET!, 
-      { expiresIn: "1h" }
+      { expiresIn: "1d" }
     );
 
     return { user, token };

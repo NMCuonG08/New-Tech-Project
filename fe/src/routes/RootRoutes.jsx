@@ -8,6 +8,7 @@ import { OAuth2CallbackPage } from '../pages/Auth/OAuth2CallbackPage';
 import { ProfilePage } from '../pages/User/ProfilePage';
 import { DashboardPage } from '../pages/Admin/DashboardPage';
 import { CityManagementPage } from '../pages/Admin/CityManagementPage';
+import { SystemAlertsPage } from '../pages/Admin/SystemAlertsPage';
 import { FavoritesPage } from '../pages/User/FavoritesPage';
 import { AlertsPage } from '../pages/User/AlertsPage';
 import { NotesPage } from '../pages/User/NotesPage';
@@ -322,6 +323,7 @@ export function RootRoutes() {
                 {/* Admin Routes - Protected */ }
                 <Route path="/admin" element={ <AdminRoute><DashboardPage /></AdminRoute> } />
                 <Route path="/admin/cities" element={ <AdminRoute><CityManagementPage /></AdminRoute> } />
+                <Route path="/admin/system-alerts" element={ <AdminRoute><SystemAlertsPage /></AdminRoute> } />
 
                 {/* Main Weather Page */ }
                 <Route path="/weather" element={ <WeatherPage /> } />

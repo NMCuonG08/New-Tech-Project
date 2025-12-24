@@ -8,4 +8,11 @@ export const ENV = {
   DB_PASSWORD: process.env.DB_PASSWORD || "",
   DB_NAME: process.env.DB_NAME || "my_app_db",
   AI_SERVICE_URL: process.env.AI_SERVICE_URL || "http://localhost:3001",
+  JWT_SECRET: (() => {
+    const secret = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+    if (!process.env.JWT_SECRET) {
+      console.warn("⚠️  WARNING: JWT_SECRET not set in .env, using default value. This is INSECURE for production!");
+    }
+    return secret;
+  })(),
 };

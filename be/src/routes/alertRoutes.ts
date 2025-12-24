@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { alertController } from "../controllers/alertController";
 import { verifyToken } from "../middlewares/auth.middleware";
+import { requireAdmin } from "../middlewares/admin.middleware";
 import { validateDto } from "../middlewares/validation.middleware";
 import { CreateAlertDto, UpdateAlertDto } from "../dtos/AlertDto";
 
@@ -26,5 +27,18 @@ router.put("/:id", validateDto(UpdateAlertDto), alertController.updateAlert.bind
 
 // DELETE /api/alerts/:id - Delete an alert
 router.delete("/:id", alertController.deleteAlert.bind(alertController));
+
+// GET /api/alerts/system/active - Get active system alerts (for all authenticated users)
+router.get("/system/active", alertController.getActiveSystemAlerts.bind(alertController));
+
+// ============ ADMIN ROUTES ============
+// POST /api/alerts/system/broadcast - Broadcast system alert (Admin only)
+router.post("/system/broadcast", verifyToken, requireAdmin, alertController.broadcastSystemAlert.bind(alertController));
+
+// GET /api/alerts/system/all - Get all system alerts (Admin only)
+router.get("/system/all", verifyToken, requireAdmin, alertController.getSystemAlerts.bind(alertController));
+
+// DELETE /api/alerts/system/:id - Delete system alert (Admin only)
+router.delete("/system/:id", verifyToken, requireAdmin, alertController.deleteSystemAlert.bind(alertController));
 
 export default router;

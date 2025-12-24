@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import express from "express";
+import { createServer } from "http";
 import cors from "cors";
 import { AppDataSource } from "./data-source";
 import { ENV } from "./config/env";
@@ -13,6 +14,7 @@ import noteRoutes from "./routes/noteRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import chatRoutes from "./routes/chat.routes";
 import { seedAdminUser } from "./seeds/adminSeed";
+import { webSocketService } from "./services/websocket.service";
 import dotenv from "dotenv";
 import session from "express-session";
 import "./config/passport";
@@ -71,8 +73,16 @@ AppDataSource.initialize()
     // Seed admin user
     await seedAdminUser();
 
-    app.listen(ENV.PORT, () => {
-      console.log(`Server is running at http://localhost:${ENV.PORT}`);
+    // Create HTTP server for WebSocket support
+    const httpServer = createServer(app);
+
+    // Initialize WebSocket
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    webSocketService.initialize(httpServer, [frontendUrl]);
+
+    httpServer.listen(ENV.PORT, () => {
+      console.log(`🚀 Server is running at http://localhost:${ENV.PORT}`);
+      console.log(`🌐 WebSocket ready for connections`);
     });
   })
   .catch((error) => {
