@@ -3,7 +3,7 @@ import { alertService } from "../services/alertService";
 import { AlertType } from "../entities/Alert";
 import { webSocketService } from "../services/websocket.service";
 import { systemAlertRepository } from "../repositories/SystemAlertRepository";
-import { SystemAlertSeverity } from "../entities/SystemAlert";
+import { SystemAlertSeverity, SystemAlert } from "../entities/SystemAlert";
 
 export class AlertController {
   async createAlert(req: Request, res: Response): Promise<void> {
@@ -139,16 +139,23 @@ export class AlertController {
       }
 
       // Create system alert
-      const systemAlert = systemAlertRepository.create({
+      const alertData: any = {
         title,
         message,
         severity: severity || SystemAlertSeverity.INFO,
-        locationId: locationId || null,
         createdBy: userId,
         isActive: true,
-        expiresAt: expiresAt ? new Date(expiresAt) : null,
-      });
+      };
 
+      if (locationId) {
+        alertData.locationId = locationId;
+      }
+
+      if (expiresAt) {
+        alertData.expiresAt = new Date(expiresAt);
+      }
+
+      const systemAlert = systemAlertRepository.create(alertData) as unknown as SystemAlert;
       const savedAlert = await systemAlertRepository.save(systemAlert);
 
       // Broadcast via WebSocket
@@ -188,6 +195,12 @@ export class AlertController {
   async deleteSystemAlert(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+      
+      if (!id) {
+        res.status(400).json({ message: "Alert ID is required" });
+        return;
+      }
+      
       const alert = await systemAlertRepository.findOne({ where: { id: parseInt(id) } });
       
       if (!alert) {
