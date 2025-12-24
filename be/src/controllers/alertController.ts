@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { alertService } from "../services/alertService";
 import { AlertType } from "../entities/Alert";
+import { alertMonitorService } from "../services/alertMonitorService";
 
 export class AlertController {
   async createAlert(req: Request, res: Response): Promise<void> {
@@ -119,6 +120,37 @@ export class AlertController {
 
       const alerts = await alertService.getActiveAlertsByLocation(userId, Number(locationId));
       res.json(alerts);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+
+  async checkAlertsForLocation(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      const { locationId } = req.params;
+
+      if (!userId) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+      }
+
+      const triggeredAlerts = await alertMonitorService.checkAlertsForLocation(
+        Number(locationId),
+        userId
+      );
+
+      res.json({
+        triggered: triggeredAlerts.length > 0,
+        alerts: triggeredAlerts.map(ta => ({
+          id: ta.alert.id,
+          type: ta.alert.type,
+          threshold: ta.alert.threshold,
+          currentValue: ta.currentValue,
+          locationName: ta.locationName,
+          description: ta.alert.description
+        }))
+      });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }

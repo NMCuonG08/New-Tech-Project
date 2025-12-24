@@ -21,6 +21,9 @@ router.get("/:id", alertController.getAlertById.bind(alertController));
 // GET /api/alerts/location/:locationId - Get active alerts by location
 router.get("/location/:locationId", alertController.getActiveAlertsByLocation.bind(alertController));
 
+// POST /api/alerts/check/:locationId - Check alerts for a location
+router.post("/check/:locationId", alertController.checkAlertsForLocation.bind(alertController));
+
 // PUT /api/alerts/:id - Update an alert
 router.put("/:id", validateDto(UpdateAlertDto), alertController.updateAlert.bind(alertController));
 

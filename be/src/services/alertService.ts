@@ -86,6 +86,72 @@ export class AlertService {
       }
     });
   }
+
+  async getAllActiveAlerts(): Promise<Alert[]> {
+    return await alertRepository.find({
+      where: { isActive: true },
+      relations: ["location", "user"]
+    });
+  }
+
+  evaluateAlert(alert: Alert, weatherData: any): { triggered: boolean; value: number | null } {
+    if (!weatherData || !alert.threshold) {
+      return { triggered: false, value: null };
+    }
+
+    let currentValue: number | null = null;
+    let triggered = false;
+
+    switch (alert.type) {
+      case AlertType.TEMPERATURE_HIGH:
+        currentValue = weatherData.main?.temp ?? null;
+        if (currentValue !== null) {
+          triggered = currentValue > alert.threshold;
+        }
+        break;
+
+      case AlertType.TEMPERATURE_LOW:
+        currentValue = weatherData.main?.temp ?? null;
+        if (currentValue !== null) {
+          triggered = currentValue < alert.threshold;
+        }
+        break;
+
+      case AlertType.RAIN:
+        // Check precipitation probability or rain volume
+        currentValue = weatherData.rain?.['1h'] ?? weatherData.rain?.['3h'] ?? 0;
+        if (currentValue !== null) {
+          triggered = currentValue > alert.threshold;
+        }
+        break;
+
+      case AlertType.WIND:
+        currentValue = weatherData.wind?.speed ?? null;
+        if (currentValue !== null) {
+          // Convert wind speed to km/h if needed (assuming m/s)
+          const windKmh = currentValue * 3.6;
+          triggered = windKmh > alert.threshold;
+        }
+        break;
+
+      case AlertType.HUMIDITY:
+        currentValue = weatherData.main?.humidity ?? null;
+        if (currentValue !== null) {
+          triggered = currentValue > alert.threshold;
+        }
+        break;
+
+      case AlertType.AQI:
+        // AQI would need separate API integration
+        currentValue = weatherData.aqi ?? null;
+        if (currentValue !== null) {
+          triggered = currentValue > alert.threshold;
+        }
+        break;
+    }
+
+    return { triggered, value: currentValue };
+  }
 }
 
 export const alertService = new AlertService();

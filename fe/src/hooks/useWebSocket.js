@@ -14,6 +14,11 @@ export const useWebSocket = () => {
   const reconnectAttempts = useRef(0);
   const MAX_RECONNECT_ATTEMPTS = 5;
 
+  console.log('🔍 useWebSocket hook called');
+  console.log('  - isAuthenticated:', isAuthenticated);
+  console.log('  - user:', user?.id || 'no user');
+  console.log('  - isConnected:', isConnected);
+
   useEffect(() => {
     // Only connect if user is authenticated
     if (!isAuthenticated || !user) {
@@ -126,8 +131,64 @@ export const useWebSocket = () => {
 
     // Listen for test alerts (for demo purposes)
     newSocket.on('test-alert', (data) => {
-      console.log('🧪 Test alert received:', data);
-      toast('Test alert received!', { icon: '🧪' });
+      console.log('');
+      console.log('═══════════════════════════════════════');
+      console.log('🧪 TEST ALERT RECEIVED FROM SERVER');
+      console.log('═══════════════════════════════════════');
+      console.log('Data:', data);
+      
+      // Show toast notification IN the app
+      toast('🧪 Server response received! Creating browser notification...', { 
+        icon: '📥',
+        duration: 4000,
+        position: 'top-right'
+      });
+      
+      // Show BROWSER notification (appears OUTSIDE browser window)
+      if ('Notification' in window) {
+        console.log('Notification API available:', true);
+        console.log('Current permission:', Notification.permission);
+        
+        if (Notification.permission === 'granted') {
+          console.log('Creating BROWSER notification...');
+          console.log('This should appear in Windows notification center!');
+          
+          try {
+            const browserNotification = new Notification('🧪 Weather Alert Test - FROM SERVER', {
+              body: `✅ SUCCESS!\n\nThis is a REAL browser notification triggered by the server via WebSocket.\n\nMessage: ${data.message || 'Test alert'}\nTime: ${new Date().toLocaleTimeString()}`,
+              icon: '/pwa-192x192.png',
+              badge: '/pwa-192x192.png',
+              tag: 'websocket-test-alert',
+              requireInteraction: true, // Stays visible until clicked
+              vibrate: [200, 100, 200],
+              silent: false
+            });
+            
+            browserNotification.onclick = () => {
+              console.log('✅ User clicked the WebSocket test browser notification!');
+              window.focus();
+            };
+            
+            console.log('✅ BROWSER notification created:', browserNotification);
+            console.log('✅ Check Windows notification area (bottom-right corner)!');
+          } catch (error) {
+            console.error('❌ Failed to create browser notification:', error);
+          }
+        } else {
+          console.log('⚠️ Browser notification permission NOT granted');
+          console.log('   Current permission:', Notification.permission);
+          console.log('   Click "Enable Browser Notifications" button first!');
+          
+          toast.error('⚠️ Browser notifications not enabled. Click "Enable Browser Notifications" button!', {
+            duration: 6000
+          });
+        }
+      } else {
+        console.error('❌ Notification API not available in this browser');
+      }
+      
+      console.log('═══════════════════════════════════════');
+      console.log('');
     });
 
     setSocket(newSocket);
@@ -162,12 +223,28 @@ export const useWebSocket = () => {
 
   // Send test alert (for development)
   const sendTestAlert = () => {
-    if (socket && isConnected) {
-      socket.emit('test', { message: 'Test from client' });
-      toast('Test alert sent', { icon: '🧪' });
-    } else {
+    console.log('🧪 sendTestAlert called');
+    console.log('  - socket:', socket ? 'connected' : 'null');
+    console.log('  - isConnected:', isConnected);
+    console.log('  - Notification.permission:', 'Notification' in window ? Notification.permission : 'N/A');
+    
+    if (!socket || !isConnected) {
       toast.error('Not connected to server');
+      return;
     }
+    
+    // Check notification permission
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      toast('⚠️ Browser notifications not enabled. Click "Enable Notifications" first!', {
+        duration: 5000,
+        icon: '⚠️'
+      });
+    }
+    
+    // Send test event to server
+    socket.emit('test', { message: 'Test from client', timestamp: new Date().toISOString() });
+    toast('🧪 Test alert sent to server...', { icon: '📤', duration: 2000 });
+    console.log('📤 Test alert emitted to server');
   };
 
   return {

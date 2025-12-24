@@ -45,6 +45,12 @@ export const alertsService = {
   // Delete an alert
   async deleteAlert(id) {
     await apiClient.delete(`/alerts/${id}`);
+  },
+
+  // Check alerts for a location
+  async checkAlertsForLocation(locationId) {
+    const response = await apiClient.post(`/alerts/check/${locationId}`);
+    return response.data;
   }
 };
 

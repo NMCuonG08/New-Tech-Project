@@ -11,6 +11,7 @@ import {
     getCachedWeatherData,
 } from '../services/dbService';
 import { getCity, getUnits, saveUnits } from '../utils/storage';
+import { useAlertsStore } from '../store/alertsStore';
 
 export function useWeather() {
     const [weather, setWeather] = useState(null);
@@ -24,6 +25,9 @@ export function useWeather() {
         return savedCity;
     });
     const [units, setUnitsState] = useState(getUnits());
+    
+    // Get alert checking function
+    const checkAndNotify = useAlertsStore(state => state.checkAndNotify);
 
     // Load weather data
     const loadWeather = useCallback(
@@ -52,6 +56,28 @@ export function useWeather() {
                 setWeather(currentData);
                 setForecast(forecastData);
 
+                // Check alerts with the weather data
+                // Note: We need locationId - get it from the location search
+                try {
+                    // Get location data to find locationId
+                    const locationResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/locations/search?q=${encodeURIComponent(cityName)}`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                    
+                    if (locationResponse.ok) {
+                        const result = await locationResponse.json();
+                        if (result.success && result.data && result.data.length > 0) {
+                            // Check alerts for this location
+                            await checkAndNotify(result.data[0].id, currentData);
+                        }
+                    }
+                } catch (alertError) {
+                    console.error('Error checking alerts:', alertError);
+                    // Don't fail the weather load if alert check fails
+                }
+
                 // Lưu vào cache
                 try {
                     await saveWeatherData(cityName, {
@@ -78,7 +104,7 @@ export function useWeather() {
                 setLoading(false);
             }
         },
-        [city, units]
+        [city, units, checkAndNotify]
     );
 
     // Load weather by coordinates

@@ -1,6 +1,8 @@
 import "reflect-metadata";
 import express from "express";
 import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import { AppDataSource } from "./data-source";
 import { ENV } from "./config/env";
 import authRoutes from "./routes/authRoutes";
@@ -16,10 +18,60 @@ import dotenv from "dotenv";
 import session from "express-session";
 import "./config/passport";
 import passport from "passport";
+import { alertMonitorService } from "./services/alertMonitorService";
+import { websocketService } from "./services/websocketService";
 
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
+
+// Initialize Socket.IO
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST"]
+  },
+  transports: ['websocket', 'polling']
+});
+
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  console.log('✅ Client connected:', socket.id);
+
+  // Handle user joining their room
+  socket.on('join', (userId) => {
+    socket.join(`user_${userId}`);
+    console.log(`📡 User ${userId} joined room`);
+  });
+
+  // Handle test alert request
+  socket.on('test', (data) => {
+    console.log('🧪 Test alert requested by:', socket.id, data);
+    
+    // Send test alert back to the client
+    socket.emit('test-alert', {
+      type: 'test',
+      message: 'Test alert from server',
+      city: 'Test City',
+      timestamp: new Date().toISOString(),
+      severity: 'medium'
+    });
+    
+    console.log('🧪 Test alert sent to client');
+  });
+
+  socket.on('disconnect', () => {
+    console.log('❌ Client disconnected:', socket.id);
+  });
+});
+
+// Make io accessible to other parts of the app
+app.set('io', io);
+
+// Initialize WebSocket service
+websocketService.initialize(io);
 
 // Session configuration - required for Passport
 app.use(
@@ -69,8 +121,12 @@ AppDataSource.initialize()
     // Seed admin user
     await seedAdminUser();
 
-    app.listen(ENV.PORT, () => {
+    // Start alert monitoring service
+    alertMonitorService.startMonitoring();
+
+    httpServer.listen(ENV.PORT, () => {
       console.log(`Server is running at http://localhost:${ENV.PORT}`);
+      console.log(`WebSocket server is ready`);
     });
   })
   .catch((error) => {

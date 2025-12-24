@@ -1,25 +1,58 @@
-import { useState } from 'react';
-import { X, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Plus, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getAllLocations } from '../../services/locationService';
+import toast from 'react-hot-toast';
 
 const ALERT_TYPES = [
   { value: 'rain', label: 'Heavy Rain', icon: '🌧️', unit: 'mm/hour', min: 0, max: 100 },
-  { value: 'temp_high', label: 'High Temperature', icon: '🔥', unit: '°C', min: 30, max: 50 },
-  { value: 'temp_low', label: 'Low Temperature', icon: '❄️', unit: '°C', min: -20, max: 20 },
+  { value: 'temperature_high', label: 'High Temperature', icon: '🔥', unit: '°C', min: 30, max: 50 },
+  { value: 'temperature_low', label: 'Low Temperature', icon: '❄️', unit: '°C', min: -20, max: 20 },
   { value: 'aqi', label: 'Air Quality Index', icon: '😷', unit: 'AQI', min: 0, max: 500 },
+  { value: 'wind', label: 'High Wind Speed', icon: '💨', unit: 'km/h', min: 0, max: 200 },
+  { value: 'humidity', label: 'High Humidity', icon: '💧', unit: '%', min: 0, max: 100 },
 ];
 
 export const CreateAlertModal = ({ isOpen, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
-    cityName: '',
-    conditionType: 'rain',
+    locationId: '',
+    locationName: '',
+    type: 'rain',
     threshold: 5,
     isActive: true
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [locations, setLocations] = useState([]);
+  const [loadingLocations, setLoadingLocations] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const selectedType = ALERT_TYPES.find(t => t.value === formData.conditionType);
+  const selectedType = ALERT_TYPES.find(t => t.value === formData.type);
+
+  // Load locations when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setLoadingLocations(true);
+      getAllLocations()
+        .then(data => {
+          setLocations(data || []);
+          setLoadingLocations(false);
+        })
+        .catch(error => {
+          console.error('Error loading locations:', error);
+          toast.error('Failed to load locations');
+          setLoadingLocations(false);
+        });
+    }
+  }, [isOpen]);
+
+  // Filter locations based on search term
+  const filteredLocations = locations.filter(loc =>
+    loc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (loc.province && loc.province.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -30,12 +63,12 @@ export const CreateAlertModal = ({ isOpen, onClose, onSubmit }) => {
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.cityName.trim()) {
-      newErrors.cityName = 'City name is required';
+    if (!formData.locationId) {
+      newErrors.locationId = 'Location is required';
     }
 
     if (!selectedType) {
-      newErrors.conditionType = 'Alert type is required';
+      newErrors.type = 'Alert type is required';
     }
 
     const threshold = Number(formData.threshold);
@@ -58,16 +91,31 @@ export const CreateAlertModal = ({ isOpen, onClose, onSubmit }) => {
       return;
     }
 
-    onSubmit(formData);
+    setIsSubmitting(true);
+
+    // Transform to backend format
+    const alertData = {
+      locationId: Number(formData.locationId),
+      type: formData.type,
+      threshold: Number(formData.threshold),
+      description: `${selectedType?.label} alert for ${formData.locationName}`,
+      isActive: formData.isActive
+    };
+
+    console.log('Submitting alert:', alertData);
+    onSubmit(alertData);
 
     // Reset form
     setFormData({
-      cityName: '',
-      conditionType: 'rain',
+      locationId: '',
+      locationName: '',
+      type: 'rain',
       threshold: 5,
       isActive: true
     });
+    setSearchTerm('');
     setErrors({});
+    setIsSubmitting(false);
     onClose();
   };
 
@@ -90,10 +138,10 @@ export const CreateAlertModal = ({ isOpen, onClose, onSubmit }) => {
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl border border-white/10"
+          className="relative w-full max-w-lg max-h-[90vh] bg-slate-900 rounded-2xl shadow-2xl border border-white/10 flex flex-col"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
             <h2 className="text-xl font-semibold text-white">Create Alert Rule</h2>
             <button
               onClick={onClose}
@@ -103,24 +151,88 @@ export const CreateAlertModal = ({ isOpen, onClose, onSubmit }) => {
             </button>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-5">
-            {/* City Name */}
-            <div>
+          {/* Form - Scrollable */}
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4"
+            style={{ maxHeight: 'calc(90vh - 180px)' }}
+          >
+            {/* Location Picker */}
+            <div className="relative">
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                City Name
+                Location
               </label>
-              <input
-                type="text"
-                value={formData.cityName}
-                onChange={(e) => handleChange('cityName', e.target.value)}
-                placeholder="e.g., Hanoi"
-                className={`w-full px-4 py-3 bg-slate-800 border ${
-                  errors.cityName ? 'border-red-500' : 'border-white/10'
-                } rounded-lg text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500 transition-colors`}
-              />
-              {errors.cityName && (
-                <p className="mt-1 text-sm text-red-400">{errors.cityName}</p>
+              
+              {/* Selected Location or Search Input */}
+              {formData.locationName && !isDropdownOpen ? (
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(true)}
+                  className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-lg text-left hover:border-blue-500 transition-colors group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-white">{formData.locationName}</div>
+                      <div className="text-xs text-slate-400 mt-0.5">Click to change</div>
+                    </div>
+                    <Search className="w-4 h-4 text-slate-400 group-hover:text-blue-400" />
+                  </div>
+                </button>
+              ) : (
+                <>
+                  {/* Search Input */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onFocus={() => setIsDropdownOpen(true)}
+                      placeholder="Search locations..."
+                      className={`w-full pl-10 pr-4 py-3 bg-slate-800 border ${
+                        errors.locationId ? 'border-red-500' : 'border-white/10'
+                      } rounded-lg text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500 transition-colors`}
+                    />
+                  </div>
+
+                  {/* Location Dropdown */}
+                  {isDropdownOpen && (
+                    <div className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-white/10 rounded-lg shadow-xl">
+                      {loadingLocations ? (
+                        <div className="p-4 text-center text-slate-400 text-sm">
+                          Loading locations...
+                        </div>
+                      ) : filteredLocations.length === 0 ? (
+                        <div className="p-4 text-center text-slate-400 text-sm">
+                          {searchTerm ? 'No locations found' : 'No locations available'}
+                        </div>
+                      ) : (
+                        filteredLocations.map((location) => (
+                          <button
+                            key={location.id}
+                            type="button"
+                            onClick={() => {
+                              handleChange('locationId', location.id);
+                              handleChange('locationName', location.name);
+                              setSearchTerm('');
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full px-4 py-3 text-left hover:bg-slate-700 transition-colors border-b border-white/5 last:border-b-0 ${
+                              formData.locationId === location.id ? 'bg-blue-500/20 text-blue-400' : 'text-white'
+                            }`}
+                          >
+                            <div className="font-medium">{location.name}</div>
+                            {location.province && (
+                              <div className="text-xs text-slate-400 mt-0.5">{location.province}</div>
+                            )}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {errors.locationId && (
+                <p className="mt-1 text-sm text-red-400">{errors.locationId}</p>
               )}
             </div>
 
@@ -129,24 +241,24 @@ export const CreateAlertModal = ({ isOpen, onClose, onSubmit }) => {
               <label className="block text-sm font-medium text-slate-300 mb-2">
                 Alert Type
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {ALERT_TYPES.map((type) => (
                   <button
                     key={type.value}
                     type="button"
                     onClick={() => {
-                      handleChange('conditionType', type.value);
+                      handleChange('type', type.value);
                       // Set default threshold for this type
                       handleChange('threshold', (type.min + type.max) / 2);
                     }}
-                    className={`p-3 rounded-lg border transition-all ${
-                      formData.conditionType === type.value
+                    className={`p-2 rounded-lg border transition-all ${
+                      formData.type === type.value
                         ? 'border-blue-500 bg-blue-500/20 text-white'
                         : 'border-white/10 bg-slate-800 text-slate-300 hover:border-white/30'
                     }`}
                   >
-                    <div className="text-2xl mb-1">{type.icon}</div>
-                    <div className="text-xs">{type.label}</div>
+                    <div className="text-xl mb-1">{type.icon}</div>
+                    <div className="text-[10px] leading-tight">{type.label}</div>
                   </button>
                 ))}
               </div>
@@ -165,11 +277,11 @@ export const CreateAlertModal = ({ isOpen, onClose, onSubmit }) => {
                   min={selectedType?.min}
                   max={selectedType?.max}
                   step={selectedType?.value === 'rain' ? 0.1 : 1}
-                  className={`flex-1 px-4 py-3 bg-slate-800 border ${
+                  className={`flex-1 px-4 py-2 bg-slate-800 border ${
                     errors.threshold ? 'border-red-500' : 'border-white/10'
                   } rounded-lg text-white focus:outline-none focus:border-blue-500 transition-colors`}
                 />
-                <span className="text-slate-400 text-sm min-w-[80px]">
+                <span className="text-slate-400 text-sm min-w-[70px]">
                   {selectedType?.unit}
                 </span>
               </div>
@@ -184,7 +296,7 @@ export const CreateAlertModal = ({ isOpen, onClose, onSubmit }) => {
             </div>
 
             {/* Active Toggle */}
-            <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
               <div>
                 <p className="text-sm font-medium text-white">Active</p>
                 <p className="text-xs text-slate-400">Enable this alert rule</p>
@@ -205,19 +317,21 @@ export const CreateAlertModal = ({ isOpen, onClose, onSubmit }) => {
             </div>
 
             {/* Notification Preview */}
-            <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-              <p className="text-xs text-slate-400 mb-2">Preview:</p>
-              <p className="text-sm text-white">
-                {selectedType?.icon} Alert when{' '}
-                <span className="font-medium">{formData.cityName || 'City'}</span>{' '}
-                {selectedType?.label.toLowerCase()} exceeds{' '}
-                <span className="font-medium">{formData.threshold} {selectedType?.unit}</span>
-              </p>
-            </div>
+            {formData.locationName && (
+              <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <p className="text-xs text-slate-400 mb-1">Preview:</p>
+                <p className="text-sm text-white">
+                  {selectedType?.icon} Alert when{' '}
+                  <span className="font-medium">{formData.locationName}</span>{' '}
+                  {selectedType?.label.toLowerCase()} exceeds{' '}
+                  <span className="font-medium">{formData.threshold} {selectedType?.unit}</span>
+                </p>
+              </div>
+            )}
           </form>
 
           {/* Footer */}
-          <div className="flex gap-3 p-6 border-t border-white/10">
+          <div className="flex gap-3 p-6 border-t border-white/10 flex-shrink-0 bg-slate-900">
             <button
               type="button"
               onClick={onClose}
@@ -227,10 +341,11 @@ export const CreateAlertModal = ({ isOpen, onClose, onSubmit }) => {
             </button>
             <button
               onClick={handleSubmit}
-              className="flex-1 px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              Create Alert
+              {isSubmitting ? 'Creating...' : 'Create Alert'}
             </button>
           </div>
         </motion.div>

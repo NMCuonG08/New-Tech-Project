@@ -52,15 +52,19 @@ export const useAlertsStore = create(
       addRule: async (rule) => {
         set({ isLoading: true, error: null });
         try {
+          console.log('Creating alert with data:', rule);
           const newRule = await alertsService.createAlert(rule);
+          console.log('Alert created successfully:', newRule);
           set((state) => ({
             rules: [...state.rules, newRule],
             isLoading: false
           }));
           return newRule;
         } catch (error) {
+          console.error('Error creating alert:', error);
+          console.error('Error response:', error.response?.data);
           set({ 
-            error: error.response?.data?.message || 'Failed to create alert',
+            error: error.response?.data?.message || error.message || 'Failed to create alert',
             isLoading: false 
           });
           return null;
@@ -150,6 +154,49 @@ export const useAlertsStore = create(
 
       // Clear history
       clearHistory: () => set({ alerts: [], unreadCount: 0 }),
+
+      // ========== Check & Evaluate Alerts ==========
+
+      // Check alerts for a location and trigger notifications
+      checkAndNotify: async (locationId, weatherData) => {
+        try {
+          const result = await alertsService.checkAlertsForLocation(locationId);
+          
+          if (result.triggered && result.alerts && result.alerts.length > 0) {
+            // Import notification service dynamically to avoid circular deps
+            const { showWeatherAlert } = await import('../services/notificationService');
+            
+            // Add to history and show notifications
+            result.alerts.forEach(alert => {
+              // Add to local history
+              get().addAlert({
+                type: alert.type,
+                locationName: alert.locationName,
+                currentValue: alert.currentValue,
+                threshold: alert.threshold,
+                description: alert.description,
+                timestamp: new Date().toISOString()
+              });
+
+              // Show browser notification
+              showWeatherAlert({
+                type: alert.type,
+                city: alert.locationName,
+                temperature: alert.currentValue,
+                threshold: alert.threshold,
+                condition: alert.description
+              });
+            });
+
+            return result.alerts;
+          }
+
+          return [];
+        } catch (error) {
+          console.error('Error checking alerts:', error);
+          return [];
+        }
+      },
 
       // ========== General ==========
 
