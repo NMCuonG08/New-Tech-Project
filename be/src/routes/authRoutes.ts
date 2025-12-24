@@ -31,7 +31,9 @@ router.get(
   "/google/callback",
   (req, res, next) => {
     passport.authenticate("google", (err: any, user: any, info: any) => {
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+      const frontendUrl = process.env.NODE_ENV === 'production'
+        ? 'https://new-tech-project.vercel.app'
+        : (process.env.FRONTEND_URL || "http://localhost:5173");
       
       if (err) {
         console.error('OAuth error:', err);
