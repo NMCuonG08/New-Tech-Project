@@ -13,11 +13,7 @@ passport.use(
         if (process.env.OAUTH_CALLBACK_URL) {
           return process.env.OAUTH_CALLBACK_URL;
         }
-        // Production environment
-        if (process.env.NODE_ENV === 'production') {
-          return 'https://new-tech-project.vercel.app/api/auth/google/callback';
-        }
-        // Development/local
+        // Use BACKEND_URL from environment (works for both production and development)
         return `${process.env.BACKEND_URL || 'http://localhost:3000'}/api/auth/google/callback`;
       })(),
       passReqToCallback: true,
