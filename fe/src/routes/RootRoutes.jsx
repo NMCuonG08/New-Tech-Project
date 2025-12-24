@@ -15,8 +15,8 @@ import { WeatherPage } from '../pages/Weather/WeatherPage';
 import { HourlyForecastPage } from '../pages/Weather/HourlyForecastPage';
 import { DailyForecastPage } from '../pages/Weather/DailyForecastPage';
 import { NavbarCitySearch } from '../components/NavbarCitySearch';
-import { Heart, Bell, StickyNote } from 'lucide-react';
-import { useEffect } from 'react';
+import { Heart, Bell, StickyNote, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
 import { saveAuthUser } from '../services/authService';
 import toast from 'react-hot-toast';
 
@@ -47,7 +47,22 @@ function RootLayout() {
     const { user, isAuthenticated, isAdmin, logout, loading } = useAuth();
     const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
-    
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     console.log('🎨 RootLayout render:', { loading, isAuthenticated, user: user?.username, path: location.pathname });
 
     // Handle OAuth2 callback in RootLayout
@@ -58,7 +73,7 @@ function RootLayout() {
 
         if (authStatus === 'error') {
             const message = errorMessage || 'Đăng nhập thất bại';
-            
+
             if (message.includes('No account found') || message.includes('Please register first')) {
                 toast.error('Tài khoản chưa được đăng ký. Vui lòng đăng ký trước!', {
                     duration: 5000,
@@ -67,7 +82,7 @@ function RootLayout() {
             } else {
                 toast.error(message);
             }
-            
+
             setSearchParams({});
             return;
         }
@@ -76,13 +91,13 @@ function RootLayout() {
             try {
                 const authData = JSON.parse(decodeURIComponent(dataParam));
                 console.log('OAuth Auth Data:', authData);
-                
+
                 // Save user data and token to localStorage
                 saveAuthUser(authData);
-                
+
                 const username = authData.username || authData.email || 'User';
                 toast.success(`Chào mừng ${username}! 🎉`);
-                
+
                 // Clear query params and reload
                 setSearchParams({});
                 setTimeout(() => {
@@ -99,7 +114,7 @@ function RootLayout() {
 
     const isLogin = location.pathname === '/login';
     const isRegister = location.pathname === '/register';
-    
+
     // Show loading spinner while checking authentication
     if (loading) {
         console.log('⏳ Showing loading spinner');
@@ -197,37 +212,60 @@ function RootLayout() {
                                 </Link>
                             </>
                         ) : (
-                            <>
-                                <Link
-                                    to="/profile"
-                                    className="rounded-full border border-white/20 px-2 lg:px-3 py-1 text-slate-200 hover:border-blue-400 hover:bg-blue-500/20 hover:text-blue-100 transition"
-                                    title="Profile"
+                            <div className="relative" ref={ dropdownRef }>
+                                <button
+                                    onClick={ () => setIsDropdownOpen(!isDropdownOpen) }
+                                    className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1 transition hover:bg-white/10 lg:px-3 lg:py-1.5"
                                 >
-                                    👤<span className="hidden lg:inline"> Profile</span>
-                                </Link>
-                                {isAdmin && (
-                                    <Link
-                                        to="/admin"
-                                        className="rounded-full border border-white/20 px-2 lg:px-3 py-1 text-slate-200 hover:border-purple-400 hover:bg-purple-500/20 hover:text-purple-100 transition"
-                                        title="Dashboard"
-                                    >
-                                        📊<span className="hidden lg:inline"> Dashboard</span>
-                                    </Link>
-                                )}
-                                <div className="flex items-center gap-1.5 lg:gap-2 rounded-full bg-slate-900/70 px-2 lg:px-3 py-1 text-[11px] text-slate-200">{isAdmin && <span className="text-purple-400 font-semibold hidden lg:inline">[Admin]</span>}
-                                    <span className="max-w-[60px] lg:max-w-[100px] truncate font-medium">
+                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">
+                                        { user?.username?.charAt(0)?.toUpperCase() }
+                                    </div>
+                                    <span className="hidden max-w-[100px] truncate text-sm font-medium text-slate-200 lg:block">
                                         { user?.username }
                                     </span>
-                                    <button
-                                        type="button"
-                                        onClick={ logout }
-                                        className="rounded-full border border-white/20 px-1.5 lg:px-2 py-0.5 text-[10px] lg:text-[11px] text-slate-300 hover:border-white/40 hover:text-white"
-                                    >
-                                        <span className="hidden lg:inline">Đăng xuất</span>
-                                        <span className="lg:hidden">X</span>
-                                    </button>
-                                </div>
-                            </>
+                                    <ChevronDown size={ 14 } className={ `text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}` } />
+                                </button>
+
+                                { isDropdownOpen && (
+                                    <div className="absolute right-0 top-full mt-2 w-48 origin-top-right overflow-hidden rounded-xl border border-white/10 bg-slate-900 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+                                        <div className="border-b border-white/10 px-4 py-3">
+                                            <p className="truncate text-sm font-medium text-white">{ user?.username }</p>
+                                            <p className="truncate text-xs text-slate-400">{ isAdmin ? 'Admin' : 'User' }</p>
+                                        </div>
+                                        <div className="p-1">
+                                            <Link
+                                                to="/profile"
+                                                onClick={ () => setIsDropdownOpen(false) }
+                                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white"
+                                            >
+                                                <User size={ 16 } />
+                                                Profile
+                                            </Link>
+                                            { isAdmin && (
+                                                <Link
+                                                    to="/admin"
+                                                    onClick={ () => setIsDropdownOpen(false) }
+                                                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white"
+                                                >
+                                                    <LayoutDashboard size={ 16 } />
+                                                    Dashboard
+                                                </Link>
+                                            ) }
+                                            <div className="my-1 border-t border-white/5"></div>
+                                            <button
+                                                onClick={ () => {
+                                                    setIsDropdownOpen(false);
+                                                    logout();
+                                                } }
+                                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
+                                            >
+                                                <LogOut size={ 16 } />
+                                                Đăng xuất
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) }
+                            </div>
                         ) }
                     </div>
                 </div>
@@ -280,7 +318,7 @@ export function RootRoutes() {
                 {/* OAuth2 Callback Handler */ }
                 <Route path="/callback" element={ <App /> } />
 
-                
+
                 {/* Admin Routes - Protected */ }
                 <Route path="/admin" element={ <AdminRoute><DashboardPage /></AdminRoute> } />
                 <Route path="/admin/cities" element={ <AdminRoute><CityManagementPage /></AdminRoute> } />

@@ -32,9 +32,18 @@ export function ChatOverlay() {
     const sessionTitle = currentSession?.title || 'New Chat';
 
     // Focus input when chat opens
+    // Focus input and scroll to bottom when chat opens
     useEffect(() => {
-        if (isOpen && inputRef.current) {
-            inputRef.current.focus();
+        if (isOpen) {
+            // Focus input
+            if (inputRef.current) {
+                inputRef.current.focus();
+            }
+
+            // Scroll to bottom immediately
+            setTimeout(() => {
+                scrollToBottom();
+            }, 100);
         }
     }, [isOpen]);
 
