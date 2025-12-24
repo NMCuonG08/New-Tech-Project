@@ -4,7 +4,20 @@ import { motion } from 'framer-motion';
 export function OAuth2Buttons({ mode = 'register' }) {
     const handleGoogleLogin = () => {
         // Get backend URL from environment variable, removing /api suffix if present
-        const backendUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api').replace(/\/api$/, '');
+        let backendUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL;
+        
+        // Fallback to production URL if on production domain
+        if (!backendUrl || backendUrl.includes('localhost')) {
+            if (window.location.hostname === 'new-tech-project.vercel.app') {
+                backendUrl = 'http://98.87.6.224:3000';
+            } else {
+                backendUrl = 'http://localhost:3000';
+            }
+        }
+        
+        // Remove /api suffix if present
+        backendUrl = backendUrl.replace(/\/api$/, '');
+        
         window.location.href = `${backendUrl}/api/auth/google?mode=${mode}`;
     };
 
