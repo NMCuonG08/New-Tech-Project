@@ -304,7 +304,6 @@ export const AlertsPage = () => {
                 WebSocket Test
               </button>
             </div>
-            </div>
           </div>
         )}
 
