@@ -70,16 +70,26 @@ export class AlertMonitorService {
         const location = alerts[0]?.location;
         if (!location || !location.name) continue;
 
+        console.log(`Checking ${alerts.length} alerts for location: ${location.name}`);
+
         try {
           // Fetch current weather for this location
           const weatherData = await weatherService.getCurrentWeather(
             location.name,
             "metric"
           );
+          console.log(`Weather data fetched for ${location.name}:`, {
+            temp: weatherData.main?.temp,
+            humidity: weatherData.main?.humidity,
+            windSpeed: weatherData.wind?.speed,
+            weather: weatherData.weather?.[0]?.description
+          });
 
           // Evaluate each alert for this location
           for (const alert of alerts) {
+            console.log(`  Evaluating alert #${alert.id}: type=${alert.type}, threshold=${alert.threshold}`);
             const result = alertService.evaluateAlert(alert, weatherData);
+            console.log(`  Result: triggered=${result.triggered}, value=${result.value}`);
 
             if (result.triggered && result.value !== null) {
               // Check if we recently triggered this alert (avoid spam)
@@ -101,7 +111,10 @@ export class AlertMonitorService {
                 // Emit WebSocket alert to user
                 if (alert.user && websocketService.isInitialized()) {
                   const alertMessage = this.formatAlertMessage(alert, result.value, location.name);
-                  websocketService.emitAlertToUser(alert.user.id, alertMessage);
+                  console.log(`📤 Sending alert to user ${alert.userId} via WebSocket:`, alertMessage);
+                  websocketService.emitAlertToUser(alert.userId, alertMessage);
+                } else {
+                  console.warn(`⚠️ Cannot send alert: user=${!!alert.user}, ws_initialized=${websocketService.isInitialized()}`);
                 }
               }
             }
