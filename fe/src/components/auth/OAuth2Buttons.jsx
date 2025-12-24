@@ -9,7 +9,7 @@ export function OAuth2Buttons({ mode = 'register' }) {
         // Fallback to production URL if on production domain
         if (!backendUrl || backendUrl.includes('localhost')) {
             if (window.location.hostname === 'new-tech-project.vercel.app') {
-                backendUrl = 'http://98.87.6.224:3000';
+                backendUrl = 'https://new-tech-project.vercel.app';
             } else {
                 backendUrl = 'http://localhost:3000';
             }
