@@ -8,9 +8,18 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: process.env.NODE_ENV === 'production' 
-        ? 'https://new-tech-project.vercel.app/api/auth/google/callback'
-        : `${process.env.BACKEND_URL || 'http://localhost:3000'}/api/auth/google/callback`,
+      callbackURL: (() => {
+        // Use OAUTH_CALLBACK_URL if explicitly set (highest priority)
+        if (process.env.OAUTH_CALLBACK_URL) {
+          return process.env.OAUTH_CALLBACK_URL;
+        }
+        // Production environment
+        if (process.env.NODE_ENV === 'production') {
+          return 'https://new-tech-project.vercel.app/api/auth/google/callback';
+        }
+        // Development/local
+        return `${process.env.BACKEND_URL || 'http://localhost:3000'}/api/auth/google/callback`;
+      })(),
       passReqToCallback: true,
     },
     async (req: any, accessToken: string, refreshToken: string, profile: any, done: any) => {
