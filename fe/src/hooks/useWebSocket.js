@@ -2,7 +2,9 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000';
+
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
+console.log('🔌 WebSocket URL:', SOCKET_URL);
 
 export function useWebSocket() {
   const socketRef = useRef(null);
@@ -10,7 +12,6 @@ export function useWebSocket() {
   const [onlineUsers, setOnlineUsers] = useState(0);
   const reconnectTimeoutRef = useRef();
 
-  // Initialize socket connection when user is authenticated
   const connect = useCallback(() => {
     const token = localStorage.getItem('auth_token');
 
