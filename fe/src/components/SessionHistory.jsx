@@ -88,8 +88,8 @@ export function SessionHistory({
                                 key={ session.id }
                                 onClick={ () => handleSelectSession(session.id) }
                                 className={ `flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors ${session.id === currentSessionId
-                                        ? 'bg-blue-500/20 border-l-2 border-blue-400'
-                                        : 'hover:bg-white/5'
+                                    ? 'bg-blue-500/20 border-l-2 border-blue-400'
+                                    : 'hover:bg-white/5'
                                     }` }
                             >
                                 <MessageSquare className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
@@ -110,8 +110,8 @@ export function SessionHistory({
                                 <button
                                     onClick={ (e) => handleDelete(e, session.id) }
                                     className={ `flex-shrink-0 rounded p-1 transition-colors ${deleteConfirm === session.id
-                                            ? 'bg-red-500/20 text-red-400'
-                                            : 'text-slate-500 hover:bg-red-500/10 hover:text-red-400'
+                                        ? 'bg-red-500/20 text-red-400'
+                                        : 'text-slate-500 hover:bg-red-500/10 hover:text-red-400'
                                         }` }
                                     title={ deleteConfirm === session.id ? 'Nhấn lại để xác nhận' : 'Xóa session' }
                                 >

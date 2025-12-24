@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
     MapPin,
     Plus,
@@ -7,7 +8,8 @@ import {
     RefreshCw,
     AlertCircle,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    BarChart3
 } from 'lucide-react';
 import { useLocations } from '../../hooks/useLocations';
 import { LocationTable } from '../../components/admin/LocationTable';
@@ -34,10 +36,22 @@ export function CityManagementPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [editingLocation, setEditingLocation] = useState(null);
 
+    // Debounce search
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (searchQuery) { // Only search if there is a query, else let the hook handle reset or initial load
+                searchLocations(searchQuery);
+            } else {
+                // When query is cleared, ensure we go back to normal view
+                // But useLocations's searchLocations('') already calls fetchLocations, 
+                // so just calling searchLocations('') is fine.
+                searchLocations('');
+            }
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery, searchLocations]);
+
     const stats = getStats();
-    const displayedLocations = searchQuery
-        ? searchLocations(searchQuery)
-        : locations;
 
     const handleAdd = async (locationData) => {
         try {
@@ -80,14 +94,37 @@ export function CityManagementPage() {
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-8 px-4">
             <div className="mx-auto max-w-7xl">
                 {/* Header */ }
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-                        <MapPin size={ 36 } className="text-blue-400" />
-                        City Management
-                    </h1>
-                    <p className="text-slate-400">
+                {/* Header with Tabs */ }
+                <div className="mb-6 sm:mb-8">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-2">
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white flex items-center gap-2 sm:gap-3">
+                            <MapPin size={ 28 } className="text-blue-400 sm:w-9 sm:h-9" />
+                            <span className="hidden sm:inline">City Management</span>
+                            <span className="sm:hidden">Cities</span>
+                        </h1>
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-400 mb-4 sm:mb-6">
                         Quản lý danh sách thành phố trong hệ thống
                     </p>
+
+                    {/* Navigation */ }
+                    <div className="flex gap-2 border-b border-white/10">
+                        <Link
+                            to="/admin"
+                            className="px-4 py-2 text-sm font-medium transition-colors text-slate-400 hover:text-white"
+                        >
+                            <div className="flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4" />
+                                Overview
+                            </div>
+                        </Link>
+                        <div className="px-4 py-2 text-sm font-medium text-blue-400 border-b-2 border-blue-400">
+                            <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4" />
+                                City Management
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Stats Cards */ }
@@ -181,7 +218,7 @@ export function CityManagementPage() {
                     {/* Table */ }
                     <div className="p-6">
                         <LocationTable
-                            locations={ displayedLocations }
+                            locations={ locations }
                             loading={ loading }
                             onEdit={ (location) => setEditingLocation(location) }
                             onDelete={ handleDelete }
@@ -234,8 +271,8 @@ export function CityManagementPage() {
                                                 onClick={ () => goToPage(pageNum) }
                                                 disabled={ loading }
                                                 className={ `w-8 h-8 rounded-lg text-sm font-medium transition ${pagination.page === pageNum
-                                                        ? 'bg-blue-500 text-white'
-                                                        : 'text-slate-300 hover:bg-white/10'
+                                                    ? 'bg-blue-500 text-white'
+                                                    : 'text-slate-300 hover:bg-white/10'
                                                     }` }
                                             >
                                                 { pageNum }

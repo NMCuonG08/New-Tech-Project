@@ -98,18 +98,33 @@ export function useLocations(initialLimit = 10) {
         }
     };
 
-    // Search locations (local filter for current page)
-    const searchLocations = (query) => {
+    // Search locations (API)
+    const searchLocations = useCallback(async (query) => {
         if (!query || query.trim() === '') {
-            return locations;
+            // Restore paginated list
+            fetchLocations(1, pagination.limit);
+            return;
         }
-        const lowerQuery = query.toLowerCase();
-        return locations.filter(loc =>
-            loc.name?.toLowerCase().includes(lowerQuery) ||
-            loc.province?.toLowerCase().includes(lowerQuery) ||
-            loc.countryCode?.toLowerCase().includes(lowerQuery)
-        );
-    };
+
+        setLoading(true);
+        try {
+            const results = await locationAdminService.searchLocations(query);
+            setLocations(results);
+
+            // Mock pagination for search results
+            setPagination({
+                page: 1,
+                limit: results.length,
+                total: results.length,
+                totalPages: 1,
+            });
+        } catch (err) {
+            setError(err.message);
+            console.error('Error searching locations:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [fetchLocations, pagination.limit]);
 
     // Get stats
     const getStats = () => {
