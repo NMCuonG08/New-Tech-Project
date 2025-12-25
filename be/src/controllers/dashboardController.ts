@@ -38,4 +38,25 @@ export class DashboardController {
       res.status(500).json({ message: 'Failed to fetch system health' });
     }
   };
+
+  getTopCities = async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const topCities = await this.dashboardService.getTopCities(limit);
+      res.json(topCities);
+    } catch (error) {
+      console.error('Error fetching top cities:', error);
+      res.status(500).json({ message: 'Failed to fetch top cities' });
+    }
+  };
+
+  getTotalCities = async (req: Request, res: Response) => {
+    try {
+      const result = await this.dashboardService.getTotalCities();
+      res.json(result);
+    } catch (error) {
+      console.error('Error fetching total cities:', error);
+      res.status(500).json({ message: 'Failed to fetch total cities' });
+    }
+  };
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDashboard } from '../../hooks/useDashboard';
+import { TopCitiesChart } from '../../components/dashboard/TopCitiesChart';
 import {
     Users,
     Activity,
@@ -20,7 +21,7 @@ import {
 } from 'lucide-react';
 
 export function DashboardPage() {
-    const { stats, recentUsers, systemHealth, loading, error, refresh } = useDashboard();
+    const { stats, recentUsers, systemHealth, totalCities, loading, error, refresh } = useDashboard();
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -121,7 +122,7 @@ export function DashboardPage() {
 
                 {/* Stats Grid */ }
                 { stats && (
-                    <div className="grid gap-6 mb-8 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid gap-6 mb-8 sm:grid-cols-2">
                         {/* Total Users */ }
                         <div className="group rounded-2xl border border-white/10 bg-gradient-to-br from-blue-500/10 to-blue-600/5 p-6 backdrop-blur-sm transition hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/20">
                             <div className="flex items-center justify-between mb-3">
@@ -139,56 +140,39 @@ export function DashboardPage() {
                             </p>
                         </div>
 
-                        {/* Active Users */ }
-                        <div className="group rounded-2xl border border-white/10 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 p-6 backdrop-blur-sm transition hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/20">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="rounded-xl bg-emerald-500/20 p-3 text-emerald-400 group-hover:scale-110 transition">
-                                    <Activity size={ 24 } />
-                                </div>
-                                <Zap size={ 20 } className="text-yellow-400" />
-                            </div>
-                            <p className="text-3xl font-bold text-white mb-1">
-                                { stats.activeUsers.toLocaleString() }
-                            </p>
-                            <p className="text-sm text-slate-400">Đang hoạt động</p>
-                            <p className="mt-2 text-xs text-slate-500">
-                                { ((stats.activeUsers / stats.totalUsers) * 100).toFixed(1) }% tổng số
-                            </p>
-                        </div>
-
-                        {/* Weather Requests */ }
+                        {/* Total Cities */ }
                         <div className="group rounded-2xl border border-white/10 bg-gradient-to-br from-purple-500/10 to-purple-600/5 p-6 backdrop-blur-sm transition hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/20">
                             <div className="flex items-center justify-between mb-3">
                                 <div className="rounded-xl bg-purple-500/20 p-3 text-purple-400 group-hover:scale-110 transition">
-                                    <Cloud size={ 24 } />
+                                    <MapPin size={ 24 } />
                                 </div>
-                                <TrendingUp size={ 20 } className="text-emerald-400" />
+                                <Cloud size={ 20 } className="text-blue-400" />
                             </div>
                             <p className="text-3xl font-bold text-white mb-1">
-                                { stats.weatherRequests.toLocaleString() }
+                                { totalCities.toLocaleString() }
                             </p>
-                            <p className="text-sm text-slate-400">Lượt tra cứu thời tiết</p>
+                            <p className="text-sm text-slate-400">Tổng tỉnh thành</p>
                             <p className="mt-2 text-xs text-purple-400">
-                                Hôm nay: { Math.floor(stats.weatherRequests / 30) }
+                                Có sẵn trong hệ thống
                             </p>
                         </div>
+                    </div>
+                ) }
 
-                        {/* AI Queries */ }
-                        <div className="group rounded-2xl border border-white/10 bg-gradient-to-br from-orange-500/10 to-orange-600/5 p-6 backdrop-blur-sm transition hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/20">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="rounded-xl bg-orange-500/20 p-3 text-orange-400 group-hover:scale-110 transition">
-                                    <MessageSquare size={ 24 } />
-                                </div>
-                                <Zap size={ 20 } className="text-yellow-400" />
+                {/* Top Favorite Cities Chart */ }
+                { stats && (
+                    <div className="mb-8 rounded-2xl border border-white/10 bg-slate-900/50 p-6 backdrop-blur-sm">
+                        <div className="mb-6 flex items-center justify-between">
+                            <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+                                <MapPin size={ 24 } className="text-purple-400" />
+                                Top Thành Phố Yêu Thích
+                            </h3>
+                            <div className="flex items-center gap-2 rounded-lg bg-purple-500/10 px-3 py-1.5">
+                                <TrendingUp size={ 16 } className="text-purple-400" />
+                                <span className="text-sm font-medium text-purple-400">Xu hướng</span>
                             </div>
-                            <p className="text-3xl font-bold text-white mb-1">
-                                { stats.aiQueries.toLocaleString() }
-                            </p>
-                            <p className="text-sm text-slate-400">Câu hỏi AI</p>
-                            <p className="mt-2 text-xs text-slate-500">
-                                Avg: { stats.avgResponseTime }
-                            </p>
                         </div>
+                        <TopCitiesChart limit={ 10 } />
                     </div>
                 ) }
 

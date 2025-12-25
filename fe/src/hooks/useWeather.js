@@ -42,8 +42,6 @@ export function useWeather() {
                     }
                 }
 
-                // Fetch từ API
-                console.log('[useWeather] Calling API with city:', cityName, 'units:', unitsType);
                 const [currentData, forecastData] = await Promise.all([
                     getCurrentWeather(cityName, unitsType),
                     getForecast(cityName, unitsType),
@@ -52,7 +50,6 @@ export function useWeather() {
                 setWeather(currentData);
                 setForecast(forecastData);
 
-                // Lưu vào cache
                 try {
                     await saveWeatherData(cityName, {
                         current: currentData,

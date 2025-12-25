@@ -16,3 +16,15 @@ export const getSystemHealth = async () => {
   const response = await apiClient.get('/dashboard/health');
   return response.data;
 };
+
+export const getTopCities = async (limit = 10) => {
+  const response = await apiClient.get('/dashboard/top-cities', {
+    params: { limit }
+  });
+  return response.data;
+};
+
+export const getTotalCities = async () => {
+  const response = await apiClient.get('/dashboard/total-cities');
+  return response.data;
+};

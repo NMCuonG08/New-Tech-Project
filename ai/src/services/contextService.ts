@@ -53,7 +53,7 @@ class ContextService {
       lastIntent: null,
       mentionedLocations: [],
       preferences: {
-        language: "vi", // vi or en
+        language: "vi",
         units: "metric",
       },
       sessionStartTime: new Date().toISOString(),

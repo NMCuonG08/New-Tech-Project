@@ -3,12 +3,14 @@ import { User } from '../entities/User';
 import { Favorite } from '../entities/Favorite';
 import { Alert } from '../entities/Alert';
 import { Note } from '../entities/Note';
+import { Location } from '../entities/Location';
 
 export class DashboardService {
   private userRepository = AppDataSource.getRepository(User);
   private favoriteRepository = AppDataSource.getRepository(Favorite);
   private alertRepository = AppDataSource.getRepository(Alert);
   private noteRepository = AppDataSource.getRepository(Note);
+  private locationRepository = AppDataSource.getRepository(Location);
 
   async getStatistics() {
     try {
@@ -105,6 +107,43 @@ export class DashboardService {
       return health;
     } catch (error) {
       console.error('Error in getSystemHealth:', error);
+      throw error;
+    }
+  }
+
+  async getTopCities(limit: number = 10) {
+    try {
+      // Query to get top favorited cities
+      const topCities = await this.favoriteRepository
+        .createQueryBuilder('favorite')
+        .select('location.name', 'city')
+        .addSelect('location.province', 'province')
+        .addSelect('COUNT(favorite.id)', 'count')
+        .innerJoin('favorite.location', 'location')
+        .groupBy('location.id')
+        .addGroupBy('location.name')
+        .addGroupBy('location.province')
+        .orderBy('count', 'DESC')
+        .limit(limit)
+        .getRawMany();
+
+      return topCities.map((city: any) => ({
+        city: city.city,
+        province: city.province || '',
+        count: parseInt(city.count),
+      }));
+    } catch (error) {
+      console.error('Error in getTopCities:', error);
+      throw error;
+    }
+  }
+
+  async getTotalCities() {
+    try {
+      const totalCities = await this.locationRepository.count();
+      return { totalCities };
+    } catch (error) {
+      console.error('Error in getTotalCities:', error);
       throw error;
     }
   }

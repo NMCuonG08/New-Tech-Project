@@ -136,14 +136,7 @@ export const AlertsPage = () => {
         <div className="mb-6 p-4 rounded-xl bg-slate-800/50 border border-white/10 flex items-center gap-3">
           <div className={ `w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}` } />
           <div className="flex-1">
-            <p className="text-white font-medium text-sm">
-              Real-time: { isConnected ? 'Connected ✅' : 'Disconnected ❌' }
-            </p>
-            <p className="text-xs text-slate-400">
-              { isConnected
-                ? 'Receiving live updates from server'
-                : 'Reconnecting...' }
-            </p>
+
           </div>
           <div className="flex gap-3 text-xs">
             <div className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400">

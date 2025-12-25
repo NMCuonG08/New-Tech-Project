@@ -68,7 +68,6 @@ class AIService {
 
       if (intentResult.intent === "GENERAL_CHAT") {
         const result = this.handleGeneralChat(userInput);
-        // ✅ FIX: Update context before returning
         this.contextService.updateContext(
           sessionId,
           userInput,
@@ -84,12 +83,11 @@ class AIService {
         intentResult.confidence < 0.5
       ) {
         const result = this.handleClarification(userInput, contextSummary);
-        // ✅ FIX: Update context before returning
         this.contextService.updateContext(
           sessionId,
           userInput,
           intentResult.intent,
-          {}, // No parameters for clarification
+          {},
           result.response
         );
         return result;
