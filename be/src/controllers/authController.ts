@@ -58,3 +58,66 @@ export const login = async (req: Request, res: Response) => {
     return res.status(401).json({ message: err.message || "Login failed" });
   }
 };
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { username, email } = req.body;
+    const userId = req.user.id;
+
+    const updatedUser = await authService.updateProfile(userId, { username, email });
+
+    return res.json({
+      id: updatedUser.id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      createdAt: updatedUser.createdAt
+    });
+  } catch (err: any) {
+    if (err.message === "User not found") {
+      return res.status(404).json({ message: err.message });
+    }
+    if (err.message === "Username already taken" || err.message === "Email already taken") {
+      return res.status(400).json({ message: err.message });
+    }
+    return res.status(500).json({ message: "Failed to update profile" });
+  }
+};
+
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Current password and new password are required" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "New password must be at least 6 characters" });
+    }
+
+    await authService.changePassword(userId, currentPassword, newPassword);
+
+    return res.json({ message: "Password changed successfully" });
+  } catch (err: any) {
+    if (err.message === "User not found") {
+      return res.status(404).json({ message: err.message });
+    }
+    if (err.message === "Current password is incorrect") {
+      return res.status(400).json({ message: err.message });
+    }
+    if (err.message === "Cannot change password for OAuth-only accounts") {
+      return res.status(400).json({ message: err.message });
+    }
+    return res.status(500).json({ message: "Failed to change password" });
+  }
+};
