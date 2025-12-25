@@ -13,8 +13,22 @@ export function useWebSocket() {
   const connect = useCallback(() => {
     const token = localStorage.getItem('auth_token');
 
-    if (!token || socketRef.current?.connected) {
+    if (!token) {
+      console.log('⚠️ No token found, skipping WebSocket connection');
       return;
+    }
+
+    // If already connected with same token, don't reconnect
+    if (socketRef.current?.connected && socketRef.current?.auth?.token === token) {
+      console.log('✓ WebSocket already connected with current token');
+      return;
+    }
+
+    // Disconnect existing socket if any (with different/old token)
+    if (socketRef.current) {
+      console.log('🔄 Disconnecting old WebSocket connection...');
+      socketRef.current.disconnect();
+      socketRef.current = null;
     }
 
     console.log('🔌 Connecting to WebSocket...', SOCKET_URL);
@@ -147,10 +161,32 @@ export function useWebSocket() {
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (token) {
-      connect();
+      // Disconnect existing connection first if any
+      if (socketRef.current) {
+        console.log('🔄 Token changed, reconnecting WebSocket...');
+        disconnect();
+        // Wait a bit before reconnecting with new token
+        setTimeout(() => {
+          connect();
+        }, 100);
+      } else {
+        connect();
+      }
     }
 
+    // Listen for token updates (after login)
+    const handleTokenUpdate = () => {
+      console.log('🔑 Token updated, reconnecting WebSocket...');
+      disconnect();
+      setTimeout(() => {
+        connect();
+      }, 100);
+    };
+    
+    window.addEventListener('auth_token_updated', handleTokenUpdate);
+
     return () => {
+      window.removeEventListener('auth_token_updated', handleTokenUpdate);
       disconnect();
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);

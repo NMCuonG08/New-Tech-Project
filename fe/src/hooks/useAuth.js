@@ -73,6 +73,9 @@ export function useAuth() {
             // Update state với user data (đảm bảo có role)
             setUser(userData);
             
+            // Trigger WebSocket reconnection with new token
+            window.dispatchEvent(new CustomEvent('auth_token_updated'));
+            
             // Toast notification
             toast.success(`Chào mừng ${userData.username}! 👋`, {
                 duration: 3000,
