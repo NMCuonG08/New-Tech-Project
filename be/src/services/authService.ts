@@ -70,8 +70,10 @@ export class AuthService {
         if (existingEmail) {
           throw new Error("Email already taken");
         }
+        user.email = updates.email;
+      } else {
+        delete user.email;
       }
-      user.email = updates.email || undefined;
     }
 
     return userRepository.save(user);
