@@ -2,7 +2,10 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 
-const SOCKET_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
+// Use VITE_BACKEND_URL if available, otherwise strip /api from VITE_API_BASE_URL, fallback to localhost
+const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || 
+                   (import.meta.env.VITE_API_BASE_URL?.replace('/api', '')) || 
+                   'http://localhost:3000';
 
 export function useWebSocket() {
   const socketRef = useRef(null);
@@ -73,18 +76,14 @@ export function useWebSocket() {
       // Check if it's an authentication error (expired token)
       if (error.message.includes('Authentication error') || error.message.includes('Invalid token')) {
         console.warn('⚠️ WebSocket authentication failed - token may be expired');
-        // Clear expired token
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('auth_user');
-        
-        // Redirect to login if not already there
-        if (!window.location.pathname.includes('/auth/')) {
-          toast.error('Session expired. Please login again.', { id: 'ws-auth-error' });
-          setTimeout(() => {
-            window.location.href = '/auth/login';
-          }, 1500);
-        }
+        // Just log the error, don't clear tokens or reload
+        // The API interceptor will handle token expiration for regular requests
+      } else {
+        // Only show error for non-auth issues
+        toast.error('Lỗi kết nối WebSocket', {
+          id: 'ws-connection-error',
+          duration: 3000,
+        });
       }
     });
 

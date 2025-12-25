@@ -2,6 +2,14 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
+console.log('🔧 API Configuration:', {
+    VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+    VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
+    API_BASE_URL,
+    mode: import.meta.env.MODE,
+    prod: import.meta.env.PROD
+});
+
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,

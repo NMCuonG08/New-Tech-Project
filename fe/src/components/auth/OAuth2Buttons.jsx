@@ -3,20 +3,20 @@ import { motion } from 'framer-motion';
 // OAuth2 Button Component
 export function OAuth2Buttons({ mode = 'register' }) {
     const handleGoogleLogin = () => {
-        // Get backend URL from environment variable, removing /api suffix if present
-        let backendUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL;
+        // Get backend URL from environment variable
+        let backendUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL;
         
-        // Fallback to production URL if on production domain
-        if (!backendUrl || backendUrl.includes('localhost')) {
+        // Remove /api suffix if present
+        if (backendUrl) {
+            backendUrl = backendUrl.replace(/\/api$/, '');
+        } else {
+            // Fallback based on current hostname
             if (window.location.hostname === 'new-tech-project.vercel.app') {
                 backendUrl = 'https://new-tech-project.vercel.app';
             } else {
                 backendUrl = 'http://localhost:3000';
             }
         }
-        
-        // Remove /api suffix if present
-        backendUrl = backendUrl.replace(/\/api$/, '');
         
         window.location.href = `${backendUrl}/api/auth/google?mode=${mode}`;
     };
