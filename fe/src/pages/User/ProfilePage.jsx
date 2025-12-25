@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { User, Mail, Calendar, Shield, Key, Save, Camera, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { updateProfile, changePassword, saveAuthUser } from '../../services/authService';
 
 export function ProfilePage() {
-    const { user } = useAuth();
+    const { user, setUser } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [formData, setFormData] = useState({
         username: user?.username || '',
         email: user?.email || '',
@@ -14,19 +17,51 @@ export function ProfilePage() {
         confirmPassword: '',
     });
 
+    // Check if user is an OAuth user (has googleId)
+    const isOAuthUser = user?.googleId !== undefined && user?.googleId !== null;
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleUpdateProfile = (e) => {
+    const handleUpdateProfile = async (e) => {
         e.preventDefault();
-        // TODO: Implement API call to update profile
-        toast.success('Cập nhật thông tin thành công!');
-        setIsEditing(false);
+        
+        // Frontend validation
+        if (formData.username && formData.username.length < 3) {
+            toast.error('Tên người dùng phải có ít nhất 3 ký tự!');
+            return;
+        }
+        
+        setIsUpdating(true);
+        
+        try {
+            const updatedUser = await updateProfile({
+                username: formData.username,
+                email: formData.email
+            });
+            
+            // Update local user data
+            const token = localStorage.getItem('auth_token');
+            saveAuthUser({ ...updatedUser, token });
+            
+            // Update auth context if available
+            if (setUser) {
+                setUser(updatedUser);
+            }
+            
+            toast.success('Cập nhật thông tin thành công!');
+            setIsEditing(false);
+        } catch (error) {
+            const message = error?.response?.data?.message || 'Cập nhật thất bại';
+            toast.error(message);
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
-    const handleChangePassword = (e) => {
+    const handleChangePassword = async (e) => {
         e.preventDefault();
         
         if (formData.newPassword !== formData.confirmPassword) {
@@ -39,14 +74,27 @@ export function ProfilePage() {
             return;
         }
 
-        // TODO: Implement API call to change password
-        toast.success('Đổi mật khẩu thành công!');
-        setFormData({
-            ...formData,
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: '',
-        });
+        setIsChangingPassword(true);
+        
+        try {
+            await changePassword({
+                currentPassword: formData.currentPassword,
+                newPassword: formData.newPassword
+            });
+            
+            toast.success('Đổi mật khẩu thành công!');
+            setFormData({
+                ...formData,
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: '',
+            });
+        } catch (error) {
+            const message = error?.response?.data?.message || 'Đổi mật khẩu thất bại';
+            toast.error(message);
+        } finally {
+            setIsChangingPassword(false);
+        }
     };
 
     return (
@@ -149,20 +197,26 @@ export function ProfilePage() {
                                         value={formData.username}
                                         onChange={handleInputChange}
                                         disabled={!isEditing}
+                                        minLength={3}
+                                        required
                                         className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-2.5 text-white placeholder-slate-500 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                     />
+                                    <p className="mt-1 text-xs text-slate-400">Tối thiểu 3 ký tự</p>
                                 </div>
 
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-slate-300">
                                         Email
+                                        {isOAuthUser && (
+                                            <span className="ml-2 text-xs text-amber-400">(OAuth - không thể thay đổi)</span>
+                                        )}
                                     </label>
                                     <input
                                         type="email"
                                         name="email"
                                         value={formData.email}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
+                                        disabled={!isEditing || isOAuthUser}
                                         className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-2.5 text-white placeholder-slate-500 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                     />
                                 </div>
@@ -170,10 +224,11 @@ export function ProfilePage() {
                                 {isEditing && (
                                     <button
                                         type="submit"
-                                        className="w-full rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 font-medium text-white shadow-lg shadow-blue-500/30 transition hover:shadow-xl hover:shadow-blue-500/40 flex items-center justify-center gap-2"
+                                        disabled={isUpdating}
+                                        className="w-full rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 font-medium text-white shadow-lg shadow-blue-500/30 transition hover:shadow-xl hover:shadow-blue-500/40 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <Save size={18} />
-                                        Lưu thay đổi
+                                        {isUpdating ? 'Đang lưu...' : 'Lưu thay đổi'}
                                     </button>
                                 )}
                             </form>
@@ -231,10 +286,11 @@ export function ProfilePage() {
 
                                 <button
                                     type="submit"
-                                    className="w-full rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2.5 font-medium text-white shadow-lg shadow-purple-500/30 transition hover:shadow-xl hover:shadow-purple-500/40 flex items-center justify-center gap-2"
+                                    disabled={isChangingPassword}
+                                    className="w-full rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2.5 font-medium text-white shadow-lg shadow-purple-500/30 transition hover:shadow-xl hover:shadow-purple-500/40 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <Key size={18} />
-                                    Đổi mật khẩu
+                                    {isChangingPassword ? 'Đang đổi mật khẩu...' : 'Đổi mật khẩu'}
                                 </button>
                             </form>
                         </div>

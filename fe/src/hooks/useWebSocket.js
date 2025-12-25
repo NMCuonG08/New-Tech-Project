@@ -55,6 +55,23 @@ export function useWebSocket() {
     socket.on('connect_error', (error) => {
       console.error('🔴 WebSocket connection error:', error.message);
       setIsConnected(false);
+      
+      // Check if it's an authentication error (expired token)
+      if (error.message.includes('Authentication error') || error.message.includes('Invalid token')) {
+        console.warn('⚠️ WebSocket authentication failed - token may be expired');
+        // Clear expired token
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('auth_user');
+        
+        // Redirect to login if not already there
+        if (!window.location.pathname.includes('/auth/')) {
+          toast.error('Session expired. Please login again.', { id: 'ws-auth-error' });
+          setTimeout(() => {
+            window.location.href = '/auth/login';
+          }, 1500);
+        }
+      }
     });
 
     socket.on('pong', () => {

@@ -29,9 +29,24 @@ apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response) {
-            const { status } = error.response;
-            if (status === 401) {
-                console.warn('Unauthorized - maybe token expired');
+            const { status, config } = error.response;
+            
+            // Don't intercept 401 errors from login/register endpoints
+            const isAuthEndpoint = config?.url?.includes('/auth/login') || 
+                                  config?.url?.includes('/auth/register');
+            
+            if (status === 401 && !isAuthEndpoint) {
+                console.warn('Unauthorized - token expired or invalid');
+                
+                // Clear expired token and redirect to login
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('auth_user');
+                
+                // Only redirect if not already on auth page
+                if (!window.location.pathname.includes('/auth/')) {
+                    window.location.href = '/auth/login';
+                }
             }
         }
 

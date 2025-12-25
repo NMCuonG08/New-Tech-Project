@@ -12,7 +12,15 @@ export class FavoriteService {
     }
 
     const favorite = favoriteRepository.create({ userId, locationId });
-    return await favoriteRepository.save(favorite);
+    const saved = await favoriteRepository.save(favorite);
+    
+    // Return the favorite with location relation
+    const favoriteWithLocation = await favoriteRepository.findOne({
+      where: { id: saved.id },
+      relations: ["location"]
+    });
+    
+    return favoriteWithLocation!;
   }
 
   async getUserFavorites(userId: number): Promise<Favorite[]> {

@@ -33,13 +33,13 @@ export const useFavoritesStore = create(
             isLoading: false,
             error: null
           }));
-          return true;
+          return newFavorite; // Return the favorite object with location
         } catch (error) {
           set({ 
             error: error.response?.data?.message || 'Failed to add favorite',
             isLoading: false 
           });
-          return false;
+          return null;
         }
       },
 

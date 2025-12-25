@@ -36,13 +36,13 @@ export const FavoritesPage = () => {
     for (const fav of favorites) {
       try {
         const weather = await fetchWeatherForCity(
-          fav.cityName,
-          fav.latitude,
-          fav.longitude
+          fav.location?.name,
+          fav.location?.lat,
+          fav.location?.lon
         );
         newWeatherData[fav.id] = weather;
       } catch (error) {
-        console.error(`Failed to fetch weather for ${fav.cityName}:`, error);
+        console.error(`Failed to fetch weather for ${fav.location?.name}:`, error);
       }
     }
 
@@ -56,24 +56,25 @@ export const FavoritesPage = () => {
     }
   }, [favorites.length]);
 
-  const handleAddFavorite = (city) => {
-    const success = addFavorite(city);
-    if (success) {
-      toast.success(`${city.cityName} added to favorites!`);
+  const handleAddFavorite = async (locationId) => {
+    const newFavorite = await addFavorite(locationId);
+    if (newFavorite) {
+      const cityName = newFavorite.location?.name || 'City';
+      toast.success(`${cityName} added to favorites!`);
     } else {
-      toast.error('City already in favorites');
+      toast.error('Failed to add city to favorites');
     }
   };
 
   const handleRemoveFavorite = (id) => {
     const favorite = favorites.find(f => f.id === id);
     removeFavorite(id);
-    toast.success(`${favorite?.cityName} removed from favorites`);
+    toast.success(`${favorite?.location?.name || 'City'} removed from favorites`);
   };
 
   const handleCardClick = (favorite) => {
     // Navigate to weather detail page (implement based on your routing)
-    console.log('Navigate to:', favorite.cityName);
+    console.log('Navigate to:', favorite.location?.name);
     toast('Weather detail page coming soon!', { icon: '🚧' });
   };
 

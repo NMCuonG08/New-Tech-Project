@@ -15,28 +15,32 @@ export function useAuth() {
                 const token = localStorage.getItem('auth_token');
                 
                 if (stored && token) {
-                    // Set user immediately from localStorage
-                    setUser(stored);
-                    setLoading(false);
-                    
-                    // Optional: Fetch fresh user data in background
-                    getCurrentUser()
-                        .then(userData => {
-                            setUser(userData);
-                            saveAuthUser({ ...userData, token });
-                        })
-                        .catch((err) => {
-                            console.log('Failed to refresh user data:', err);
-                            // Keep using cached data
-                        });
+                    console.log('🔍 Found stored auth, verifying token...');
+                    // Verify token with backend before setting user
+                    try {
+                        const userData = await getCurrentUser();
+                        console.log('✅ Token valid, user authenticated:', userData.username);
+                        setUser(userData);
+                        saveAuthUser({ ...userData, token });
+                    } catch (err) {
+                        console.log('❌ Token verification failed, clearing auth:', err.message);
+                        // Token is invalid/expired, clear everything
+                        clearAuthUser();
+                        setUser(null);
+                        if (err?.response?.status === 401) {
+                            toast.error('Session expired. Please login again.', { id: 'session-expired' });
+                        }
+                    }
                 } else {
                     // No stored user or token
+                    console.log('ℹ️ No stored auth found');
                     setUser(null);
-                    setLoading(false);
                 }
             } catch (error) {
                 console.error('Error initializing auth:', error);
+                clearAuthUser();
                 setUser(null);
+            } finally {
                 setLoading(false);
             }
         };
@@ -80,6 +84,10 @@ export function useAuth() {
                 err?.response?.data?.message ||
                 err?.message ||
                 'Đăng nhập thất bại, vui lòng thử lại';
+            
+            // Clear any existing auth state on login failure
+            clearAuthUser();
+            setUser(null);
             setError(message);
             
             // Toast error
@@ -145,6 +153,7 @@ export function useAuth() {
 
     return {
         user,
+        setUser,
         loading,
         error,
         isAuthenticated: !!user,

@@ -1,6 +1,8 @@
 import { Router } from "express";
-import { register, login, getCurrentUser } from "../controllers/authController";
+import { register, login, getCurrentUser, updateProfile, changePassword } from "../controllers/authController";
 import { verifyToken } from "../middlewares/auth.middleware";
+import { validateDto } from "../middlewares/validation.middleware";
+import { UpdateProfileDto, ChangePasswordDto } from "../dtos/UpdateProfileDto";
 import passport from "passport";
 
 const router = Router();
@@ -8,6 +10,11 @@ const router = Router();
 router.post("/register", register);
 router.post("/login", login);
 router.get("/me", verifyToken, getCurrentUser);
+
+// Profile update routes
+router.put("/profile", verifyToken, validateDto(UpdateProfileDto), updateProfile);
+router.post("/change-password", verifyToken, validateDto(ChangePasswordDto), changePassword);
+
 router.get("/protected", verifyToken, (req, res) => {
   res.json({ message: "This is a protected route." });
 });

@@ -80,4 +80,16 @@ export async function verifyToken() {
     }
 }
 
+// Update user profile
+export async function updateProfile({ username, email }) {
+    const response = await apiClient.put('/auth/profile', { username, email });
+    return response.data; // { id, username, email, role }
+}
+
+// Change password
+export async function changePassword({ currentPassword, newPassword }) {
+    const response = await apiClient.post('/auth/change-password', { currentPassword, newPassword });
+    return response.data; // { message: "Password changed successfully" }
+}
+
 

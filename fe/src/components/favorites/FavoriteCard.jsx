@@ -48,7 +48,7 @@ export const FavoriteCard = ({ favorite, weather, onRemove, onClick }) => {
         <div className="flex items-center gap-2">
           <MapPin className="w-4 h-4 text-blue-400" />
           <h3 className="font-semibold text-white truncate">
-            {favorite.cityName}
+            {favorite.location?.name || 'Unknown'}
           </h3>
         </div>
         

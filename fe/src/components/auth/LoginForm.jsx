@@ -18,7 +18,12 @@ export function LoginForm({ onLogin, loading, error, onSwitchToRegister }) {
     });
 
     const onSubmit = async (data) => {
-        await onLogin(data);
+        try {
+            await onLogin(data);
+        } catch (err) {
+            // Error is already handled in parent, just prevent any default behavior
+            console.error('Form submission error:', err);
+        }
     };
 
     return (
