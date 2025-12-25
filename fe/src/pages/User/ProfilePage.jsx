@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { User, Mail, Calendar, Shield, Key, Save, Camera, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { userService } from '../../services/userService';
+import { saveAuthUser } from '../../services/authService';
 
 export function ProfilePage() {
-    const { user } = useAuth();
+    const { user, setUser } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [formData, setFormData] = useState({
         username: user?.username || '',
         email: user?.email || '',
@@ -14,21 +18,69 @@ export function ProfilePage() {
         confirmPassword: '',
     });
 
+    // Update form when user changes
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                username: user.username || '',
+                email: user.email || '',
+            }));
+        }
+    }, [user]);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleUpdateProfile = (e) => {
-        e.preventDefault();
-        // TODO: Implement API call to update profile
-        toast.success('Cập nhật thông tin thành công!');
-        setIsEditing(false);
-    };
-
-    const handleChangePassword = (e) => {
+    const handleUpdateProfile = async (e) => {
         e.preventDefault();
         
+        if (!formData.username.trim()) {
+            toast.error('Tên người dùng không được để trống!');
+            return;
+        }
+
+        setIsUpdating(true);
+        try {
+            const updatedUser = await userService.updateProfile({
+                username: formData.username.trim(),
+                email: formData.email.trim() || undefined,
+            });
+
+            // Update user in context and localStorage
+            setUser(updatedUser);
+            
+            // Update localStorage to persist the change
+            const currentToken = localStorage.getItem('auth_token');
+            if (currentToken) {
+                saveAuthUser({ ...updatedUser, token: currentToken });
+            }
+
+            toast.success('Cập nhật thông tin thành công!');
+            setIsEditing(false);
+        } catch (error) {
+            const message = error?.response?.data?.message || 'Cập nhật thất bại!';
+            toast.error(message);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        
+        if (!formData.currentPassword) {
+            toast.error('Vui lòng nhập mật khẩu hiện tại!');
+            return;
+        }
+
+        if (!formData.newPassword) {
+            toast.error('Vui lòng nhập mật khẩu mới!');
+            return;
+        }
+
         if (formData.newPassword !== formData.confirmPassword) {
             toast.error('Mật khẩu xác nhận không khớp!');
             return;
@@ -39,14 +91,26 @@ export function ProfilePage() {
             return;
         }
 
-        // TODO: Implement API call to change password
-        toast.success('Đổi mật khẩu thành công!');
-        setFormData({
-            ...formData,
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: '',
-        });
+        setIsChangingPassword(true);
+        try {
+            await userService.changePassword({
+                currentPassword: formData.currentPassword,
+                newPassword: formData.newPassword,
+            });
+
+            toast.success('Đổi mật khẩu thành công!');
+            setFormData({
+                ...formData,
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: '',
+            });
+        } catch (error) {
+            const message = error?.response?.data?.message || 'Đổi mật khẩu thất bại!';
+            toast.error(message);
+        } finally {
+            setIsChangingPassword(false);
+        }
     };
 
     return (
@@ -170,10 +234,20 @@ export function ProfilePage() {
                                 {isEditing && (
                                     <button
                                         type="submit"
-                                        className="w-full rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 font-medium text-white shadow-lg shadow-blue-500/30 transition hover:shadow-xl hover:shadow-blue-500/40 flex items-center justify-center gap-2"
+                                        disabled={isUpdating}
+                                        className="w-full rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 font-medium text-white shadow-lg shadow-blue-500/30 transition hover:shadow-xl hover:shadow-blue-500/40 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <Save size={18} />
-                                        Lưu thay đổi
+                                        {isUpdating ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                Đang lưu...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Save size={18} />
+                                                Lưu thay đổi
+                                            </>
+                                        )}
                                     </button>
                                 )}
                             </form>
@@ -231,10 +305,20 @@ export function ProfilePage() {
 
                                 <button
                                     type="submit"
-                                    className="w-full rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2.5 font-medium text-white shadow-lg shadow-purple-500/30 transition hover:shadow-xl hover:shadow-purple-500/40 flex items-center justify-center gap-2"
+                                    disabled={isChangingPassword}
+                                    className="w-full rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2.5 font-medium text-white shadow-lg shadow-purple-500/30 transition hover:shadow-xl hover:shadow-purple-500/40 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <Key size={18} />
-                                    Đổi mật khẩu
+                                    {isChangingPassword ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            Đang đổi mật khẩu...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Key size={18} />
+                                            Đổi mật khẩu
+                                        </>
+                                    )}
                                 </button>
                             </form>
                         </div>

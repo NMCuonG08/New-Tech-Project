@@ -145,6 +145,7 @@ export function useAuth() {
 
     return {
         user,
+        setUser, // Expose setUser for updating user data
         loading,
         error,
         isAuthenticated: !!user,
