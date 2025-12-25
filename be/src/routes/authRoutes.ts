@@ -67,7 +67,7 @@ router.get(
           role: user.role 
         }, 
         process.env.JWT_SECRET || "your_secret_key", 
-        { expiresIn: "24h" }
+        { expiresIn: "7d" }
       );
       
       // Clear the oauthMode from session
