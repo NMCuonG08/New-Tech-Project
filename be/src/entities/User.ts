@@ -21,7 +21,7 @@ export class User {
   password!: string;
 
   @Column({ unique: true, nullable: true })
-  email?: string;
+  email?: string | null;
 
   @Column({ unique: true, nullable: true })
   googleId?: string;
