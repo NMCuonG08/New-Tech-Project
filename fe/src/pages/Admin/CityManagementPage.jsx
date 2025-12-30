@@ -42,9 +42,7 @@ export function CityManagementPage() {
             if (searchQuery) { // Only search if there is a query, else let the hook handle reset or initial load
                 searchLocations(searchQuery);
             } else {
-                // When query is cleared, ensure we go back to normal view
-                // But useLocations's searchLocations('') already calls fetchLocations, 
-                // so just calling searchLocations('') is fine.
+
                 searchLocations('');
             }
         }, 500);

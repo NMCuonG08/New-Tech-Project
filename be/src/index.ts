@@ -24,6 +24,9 @@ dotenv.config();
 
 const app = express();
 
+// Trust proxy - required for secure cookies behind reverse proxy (Railway, Render, etc.)
+app.set('trust proxy', true);
+
 // Session configuration - required for Passport
 app.use(
   session({

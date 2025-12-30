@@ -3,9 +3,9 @@ import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 
 // Use VITE_BACKEND_URL if available, otherwise strip /api from VITE_API_BASE_URL, fallback to localhost
-const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || 
-                   (import.meta.env.VITE_API_BASE_URL?.replace('/api', '')) || 
-                   'http://localhost:3000';
+const SOCKET_URL = import.meta.env.VITE_BACKEND_URL ||
+  (import.meta.env.VITE_API_BASE_URL?.replace('/api', '')) ||
+  'http://localhost:3000';
 
 export function useWebSocket() {
   const socketRef = useRef(null);
@@ -72,7 +72,7 @@ export function useWebSocket() {
     socket.on('connect_error', (error) => {
       console.error('🔴 WebSocket connection error:', error.message);
       setIsConnected(false);
-      
+
       // Check if it's an authentication error (expired token)
       if (error.message.includes('Authentication error') || error.message.includes('Invalid token')) {
         console.warn('⚠️ WebSocket authentication failed - token may be expired');
@@ -181,7 +181,7 @@ export function useWebSocket() {
         connect();
       }, 100);
     };
-    
+
     window.addEventListener('auth_token_updated', handleTokenUpdate);
 
     return () => {

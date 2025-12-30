@@ -86,7 +86,7 @@ class AIService {
         this.contextService.updateContext(
           sessionId,
           userInput,
-          intentResult.intent,
+          intentResult.intent,  
           {},
           result.response
         );
