@@ -52,6 +52,7 @@ services:
       - OPEN_METEO_BASE_URL=https://api.open-meteo.com/v1
       - OPEN_METEO_ARCHIVE_URL=https://archive-api.open-meteo.com/v1
       - BACKEND_URL=http://backend:3000
+      - OAUTH_CALLBACK_URL=${OAUTH_CALLBACK_URL}
     depends_on:
       mysql:
         condition: service_healthy
