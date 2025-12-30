@@ -20,8 +20,8 @@ export class User {
   @Column({ nullable: true })
   password!: string;
 
-  @Column({ unique: true, nullable: true })
-  email?: string | null;
+  @Column({ type: 'varchar', length: 255, unique: true, nullable: true })
+  email!: string | null;
 
   @Column({ unique: true, nullable: true })
   googleId?: string;
